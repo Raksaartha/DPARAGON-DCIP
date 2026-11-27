@@ -41,7 +41,7 @@ export async function createDcipApi() {
       const values = await Promise.all(tables.map(table => supabase.from(table).select('*')))
       const data = Object.fromEntries(tables.map((table, index) => [table, checked(values[index])]))
       const rows = (type, source) => source.map(row => ({
-        master_type: type, master_id: row.id, name: row.name
+        master_type: type, master_id: row.id, name: row.name, city: row.city || null
       }))
       master = [
         ...rows('DIVISI', data.divisions),
@@ -164,6 +164,10 @@ export async function createDcipApi() {
     },
     async rmisHapusLokasi(locationId) {
       checked(await supabase.rpc('delete_location', {p_location_id: locationId}))
+    },
+    async setPropertyCity(propertyId, city) {
+      return checked(await supabase.from('properties').update({city})
+        .eq('id', propertyId).select('id,city').single())
     },
     async rmisUbahMaster(type, action, value) {
       const table = {DIVISI:'divisions', PROPERTI:'properties', AREA:'areas', KODE_POSISI:'position_codes'}[type]
