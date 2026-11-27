@@ -169,7 +169,7 @@ export async function createDcipApi() {
       return checked(await supabase.from('properties').update({city})
         .eq('id', propertyId).select('id,city').single())
     },
-    async rmisUbahMaster(type, action, value) {
+    async rmisUbahMaster(type, action, value, city) {
       const table = {DIVISI:'divisions', PROPERTI:'properties', AREA:'areas', KODE_POSISI:'position_codes'}[type]
       if (!table) throw new Error('Jenis master data tidak dikenal.')
       if (action === 'hapus') {
@@ -177,7 +177,8 @@ export async function createDcipApi() {
         return {id: value}
       }
       const row = checked(await supabase.from(table).insert({
-        id: type + '-' + crypto.randomUUID(), name: value
+        id: type + '-' + crypto.randomUUID(), name: value,
+        ...(type === 'PROPERTI' ? {city} : {})
       }).select('id,name').single())
       return row
     }
