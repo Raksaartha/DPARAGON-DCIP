@@ -190,7 +190,7 @@ function buildPositionStatusRows_(db) {
   const locationById = new Map(db.locations.map(row => [row.id, row]));
   const profileById = new Map(db.user_profiles.map(row => [row.id, row]));
   return db.location_position_status.slice()
-    .sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at)))
+    .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))
     .map((row, index) => {
       const location = locationById.get(row.location_id) || {};
       const updater = profileById.get(row.updated_by) || {};
@@ -198,7 +198,7 @@ function buildPositionStatusRows_(db) {
       return [index + 1, '', propertyById.get(row.property_id)?.name || row.property_id,
         areaById.get(location.area_id)?.name || location.area_id || '', location.name || '',
         positionById.get(row.position_id)?.name || row.position_id, row.status,
-        updater.display_name || updater.username || row.updated_by || '', row.updated_at, key];
+        updater.display_name || updater.username || row.updated_by || '', row.updated_at ? new Date(row.updated_at) : '', key];
     });
 }
 
@@ -317,10 +317,10 @@ function ensureSupportSheets_(spreadsheet) {
     status.insertColumnsAfter(status.getMaxColumns(), DCIP_SYNC.HEADERS.positionStatus.length - status.getMaxColumns());
   }
   const statusHeaders = status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).getDisplayValues()[0];
-  if (statusHeaders.every(value => !value)) {
-    status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).setValues([DCIP_SYNC.HEADERS.positionStatus]);
-    status.setFrozenRows(1);
-  }
+  if (statusHeaders.every(value => !value)) status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).setValues([DCIP_SYNC.HEADERS.positionStatus]);
+  status.setFrozenRows(1);
+  status.getRange(1, 1, 1, 9).setBackground('#142f51').setFontColor('#ffffff')
+    .setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
   status.hideColumns(10);
 }
 
@@ -328,7 +328,7 @@ function handleUsulanConfirmation(e) {
   if (!e || !e.range) return;
   const sheet = e.range.getSheet();
   const row = e.range.getRow();
-  if (sheet.getName() !== DCIP_SYNC.SHEETS.proposals || row < 2 || e.range.getColumn() !== 5 ||
+  if (sheet.getName() !== DCIP_SYNC.SHEETS.proposals || row < 2 || e.range.getColumn() !== 5 || e.range.getNumRows() !== 1 || e.range.getNumColumns() !== 1 ||
       String(e.value).toUpperCase() !== 'TRUE') return;
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
