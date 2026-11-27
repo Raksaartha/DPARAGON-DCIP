@@ -201,7 +201,11 @@ function syncSheet_(spreadsheet, sheetName, expectedHeaders, rows, keyFn, previo
   current.forEach((row, key) => {
     const rowNumber = rowIndexes.get(key);
     if (rowNumber) sheet.getRange(rowNumber, 1, 1, expectedHeaders.length).setValues([row]);
-    else sheet.getRange(sheet.getLastRow() + 1, 1, 1, expectedHeaders.length).setValues([row]);
+    else {
+      const appendAt = sheet.getLastRow() + 1;
+      ensureRowCapacity_(sheet, appendAt);
+      sheet.getRange(appendAt, 1, 1, expectedHeaders.length).setValues([row]);
+    }
   });
 
   const currentKeys = new Set(current.keys());
@@ -259,8 +263,14 @@ function readSyncState_(sheet) {
 function writeSyncState_(sheet, state) {
   const rows = [];
   Object.entries(state).forEach(([name, keys]) => keys.forEach(key => rows.push([name, key])));
+  ensureRowCapacity_(sheet, rows.length + 1);
   const oldCount = Math.max(0, sheet.getLastRow() - 1);
   if (oldCount) sheet.getRange(2, 1, oldCount, 2).clearContent();
   if (rows.length) sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+}
+
+function ensureRowCapacity_(sheet, requiredRow) {
+  const currentRows = sheet.getMaxRows();
+  if (requiredRow > currentRows) sheet.insertRowsAfter(currentRows, requiredRow - currentRows);
 }
 
