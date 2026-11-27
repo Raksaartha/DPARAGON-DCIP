@@ -5,6 +5,7 @@ Folder ini menyiapkan sinkronisasi satu arah: **Supabase adalah sumber data**, G
 ## Yang dilakukan script
 
 - Mengambil master data dan opsi material, serta jawaban inspeksi dari tiga divisi.
+- Menulis data inspeksi mentah hanya ke tab tersembunyi `DATA_TEKNIS`, `DATA_INVENTORY`, dan `DATA_RD`; tab laporan `TEKNIS`, `INVENTORY`, dan `RD` tetap menjadi tampilan 10 kolom berbasis formula.
 - Mengisi tab `STATUS POSISI` untuk status ADA/TIDAK TERDAPAT pada setiap lokasi.
 - Menampilkan usulan baru dari aplikasi pada tab `USULAN`; kolom ID internal disembunyikan.
 - Memperbarui baris yang sudah dikenal dan menambahkan baris baru berdasarkan ID.
