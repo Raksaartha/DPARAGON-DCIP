@@ -10,23 +10,24 @@ Folder ini menyiapkan sinkronisasi satu arah: **Supabase adalah sumber data**, G
 - Membuat tab tersembunyi `__SYNC_STATE` untuk mengenali baris yang pernah dibuat atau diperbarui oleh script; baris sinkron yang sudah dihapus di Supabase akan ikut dibersihkan saat sinkron berikutnya.
 - Menolak sinkronisasi jika salah satu tab atau header tidak sama dengan struktur yang diharapkan.
 
-Script tidak memerlukan deployment Web App. Sinkron otomatis memakai trigger Apps Script setiap 15 menit; menu `DCIP Sync` juga menyediakan sinkronisasi manual.
+Script tidak memerlukan deployment Web App. Sinkron otomatis memakai trigger Apps Script setiap 15 menit.
 
 ## Penyiapan
 
-1. Buka spreadsheet `DATABASE CDP`, lalu pilih **Ekstensi → Apps Script**. Buat project Apps Script yang terikat ke spreadsheet tersebut, atau gunakan project sinkronisasi khusus yang tidak dibagikan kepada Petugas.
+1. Buka [script.google.com](https://script.google.com) dan buat project Apps Script baru bernama `DPARAGON DCIP Sheet Sync`. Gunakan project terpisah agar tidak bentrok dengan Apps Script lama.
 2. Salin isi `Code.gs` ke editor Apps Script lalu simpan.
 3. Di Apps Script, buka **Project Settings → Script Properties → Add script property**, lalu isi:
 
    | Nama | Nilai |
    | --- | --- |
-   | `SPREADSHEET_ID` | `1pnQHeGv1yMu_vqxC3lC3b1aEF5d6ZlJ4RRrX7CPSaK8` |
+   | `SPREADSHEET_ID` | ID dari URL spreadsheet `DATABASE CDP` |
    | `SUPABASE_URL` | `https://bzbjnuqjfavccsdbnpdr.supabase.co` |
    | `SUPABASE_SECRET_KEY` | Secret API key Supabase (server-side), bukan Publishable key |
 
 4. Simpan Script Properties. Jangan menaruh Secret API key di source code, GitHub, chat, atau spreadsheet.
-5. Kembali ke spreadsheet dan muat ulang halaman. Pilih **DCIP Sync → Sinkronkan sekarang** dan berikan izin Apps Script yang diminta untuk mengakses spreadsheet dan menghubungi Supabase.
-6. Setelah sinkron manual berhasil, pilih **DCIP Sync → Aktifkan sinkron otomatis (15 menit)**. Jalankan sekali dan setujui izin pembuatan trigger.
+5. Pada dropdown nama fungsi di toolbar Apps Script, pilih `syncDcipToSheets`, lalu klik **Jalankan**. Berikan izin Apps Script untuk mengakses spreadsheet dan menghubungi Supabase. Baris contoh/manual yang tidak dikelola sinkronisasi akan tetap dipertahankan.
+6. Setelah sinkron manual berhasil, pilih `setupDcipAutoSync` pada dropdown fungsi, lalu klik **Jalankan** untuk memasang trigger otomatis setiap 15 menit.
+7. Untuk menghentikan sinkron otomatis, pilih `removeDcipAutoSync` pada dropdown fungsi dan klik **Jalankan**.
 
 ## Batas akses
 
