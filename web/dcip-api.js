@@ -69,7 +69,7 @@ export async function createDcipApi() {
       }).select('id').single())
     },
     async rmisMuat() {
-      const tables = ['divisions', 'properties', 'areas', 'position_codes', 'locations', 'material_items', 'material_options']
+      const tables = ['divisions', 'properties', 'areas', 'position_codes', 'division_position_codes', 'locations', 'material_items', 'material_options']
       const values = await Promise.all(tables.map(table => supabase.from(table).select('*')))
       const data = Object.fromEntries(tables.map((table, index) => [table, checked(values[index])]))
       const rows = (type, source) => source.map(row => ({
@@ -104,7 +104,7 @@ export async function createDcipApi() {
           option_order: option.display_order
         }
       }).sort((a, b) => a.item_order - b.item_order || a.option_order - b.option_order)
-      return {master, katalog: catalog}
+      return {master, katalog: catalog, divisionPositions: data.division_position_codes}
     },
     async rmisBacaInspeksi(divisionId, locationId) {
       let query = supabase.from('inspections').select('*').eq('division_id', divisionId)
@@ -125,6 +125,7 @@ export async function createDcipApi() {
           area_id: locationById.get(inspection.location_id)?.parent_area_id || '',
           location_name: inspection.location_name,
           position_code_id: inspection.position_id,
+          position_name: inspection.position_name,
           updated_at: inspection.updated_at,
           item_id: answer.item_id,
           option_value: answer.option_value,
@@ -132,17 +133,20 @@ export async function createDcipApi() {
         }
       })
     },
-    async rmisBacaStatusPosisi(locationId) {
-      if (!locationId) return []
-      return checked(await supabase.from('location_position_status')
-        .select('location_id,property_id,position_id,status,created_by,updated_by,created_at,updated_at')
-        .eq('location_id', locationId))
+    async addDivisionPosition(divisionId, name) {
+      return checked(await supabase.rpc('add_division_position', {p_division_id: divisionId, p_name: name}))
     },
-    async rmisSimpanStatusPosisi(locationId, positionId, status) {
-      return checked(await supabase.rpc('set_location_position_status', {
-        p_location_id: locationId,
-        p_position_id: positionId,
-        p_status: status
+    async removeDivisionPosition(divisionId, positionId) {
+      return checked(await supabase.rpc('remove_division_position', {p_division_id: divisionId, p_position_id: positionId}))
+    },
+    async rmisBacaStatusPosisi(locationId, divisionId) {
+      if (!locationId || !divisionId) return []
+      return checked(await supabase.from('division_position_status')
+        .select('position_id,status').eq('location_id', locationId).eq('division_id', divisionId))
+    },
+    async rmisSimpanStatusPosisi(locationId, positionId, status, divisionId) {
+      return checked(await supabase.rpc('set_division_position_status', {
+        p_division_id: divisionId, p_location_id: locationId, p_position_id: positionId, p_status: status
       }))
     },
     async rmisAjukanUsulan(input) {
