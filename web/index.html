@@ -164,6 +164,7 @@ select:required:invalid{color:#8a94a3}select option{color:var(--text)}
 <dialog id="master-add-dialog" class="modal master-add-dialog" aria-labelledby="master-add-title"></dialog>
 <dialog id="location-dialog" class="modal" aria-labelledby="location-title"></dialog>
 <dialog id="position-record-dialog" class="modal" aria-labelledby="position-record-title"></dialog>
+<dialog id="checklist-tools" class="modal" aria-labelledby="checklist-tools-title"></dialog>
 <dialog id="request-dialog" class="modal" aria-labelledby="request-title"></dialog>
 <script>
 'use strict';
@@ -309,9 +310,9 @@ function renderRequestDialog(notice=''){
   item.addEventListener('change',()=>proposalItemId=item.value);
   syncFields();
 }
-function openRequestDialog(){
+function openRequestDialog(type='AREA',itemId=''){
   if(!getDivision()){proposalNotice='Pilih divisi terlebih dahulu.';render();return;}
-  proposalNotice='';proposalType='AREA';proposalPositionId=rmisPosition(s.position)?.master_id||'';proposalItemId='';
+  proposalNotice='';proposalType=type;proposalPositionId=rmisPosition(s.position)?.master_id||'';proposalItemId=itemId;
   renderRequestDialog();requestDialog.showModal();requestDialog.querySelector('#request-value').focus();
 }
 function renderAdminRequests(){
@@ -390,7 +391,7 @@ if(s.page==='home'){
   const positionField=positionSelector();
   html+=`<div class="actions check-top-actions"><button class="secondary" data-act="back">← Kembali</button><button class="danger-button" data-act="delete-location" aria-label="Hapus lokasi beserta checklist tersimpan" ${checking||deletingLocation?'disabled':''}>${deletingLocation?'Menghapus...':'Hapus'}</button></div><section class="identity-panel check-identity-panel"><div class="check-location-header">`+title(locationDisplayName(s.room,s.areaPosition).toLocaleUpperCase('id-ID'))+`<p class="muted">Divisi ${esc(getDivision()?.name||"")} · ${esc(prop().name)} · Area ${esc(s.areaPosition)}</p></div>${locationDeleteError?`<p class="error" role="alert">${esc(locationDeleteError)}</p>`:''}${savedPositionPanel()}</section>${positionNotice?`<p class="${positionNotice.startsWith('Gagal')?'error':'good'} small" role="status">${esc(positionNotice)}</p>`:''}${proposalNotice?`<p class="modal-notice" role="status">${esc(proposalNotice)}</p>`:''}${positionStatus()}<button type="button" class="secondary full request-entry-button" data-act="request">Ajukan usulan katalog</button>`;
   if(canInput()){
-     html+=progress()+`<section class="checklist-panel" aria-label="Checklist material">`+(positionField?`<div class="checklist-position-picker">${positionField}</div>`:'')+groups.map((g,i)=>`<section id="group-${i}" class="checklist-group">${s.position==="FASUM"?`<h2>${esc(g.name)}</h2>`:""}${g.items.map(([id,name,opts])=>item(id,name,opts)).join('')}</section>`).join('')+`</section>${count()!==all.length?'<p class="muted small" id="save-completion-hint">Lengkapi seluruh komponen untuk mengaktifkan tombol Simpan.</p>':''}<button class="full" data-act="save" ${count()!==all.length||!canInput()||saving?'disabled':''}>Simpan</button>`;
+     html+=progress()+`<section class="checklist-panel" aria-label="Checklist material">`+(positionField?`<div class="checklist-position-picker">${positionField}</div>`:'')+`<div class="checklist-position-picker between"><strong>Pilih Komponen</strong><button type="button" class="secondary plus-button" data-act="pick-component" aria-label="Pilih komponen" aria-haspopup="dialog">+</button></div>`+groups.map((g,i)=>`<section id="group-${i}" class="checklist-group">${s.position==="FASUM"?`<h2>${esc(g.name)}</h2>`:""}${g.items.map(([id,name,opts])=>item(id,name,opts)).join('')}</section>`).join('')+`</section>${count()!==all.length?'<p class="muted small" id="save-completion-hint">Lengkapi seluruh komponen untuk mengaktifkan tombol Simpan.</p>':''}<button class="full" data-act="save" ${count()!==all.length||!canInput()||saving?'disabled':''}>Simpan</button>`;
   }else if(!checking&&!storageError&&!editingRecordKey&&!availablePositionCodes().length){
      html+=`<button class="full" data-act="another">Data lokasi berikutnya</button>`;
   }else{
@@ -400,7 +401,78 @@ if(s.page==='home'){
 if(s.page==='success'){html+=`<div class="success"><div class="check" aria-hidden="true">✓</div>${title('Pendataan tersimpan')}<p>Divisi ${esc(getDivision()?.name||"")} · ${esc(prop().name)} · Area ${esc(s.areaPosition)} · ${esc(locationDisplayName(s.room,s.areaPosition))} &middot; ${esc(s.position||'Kode posisi belum dipilih')}</p></div><button class="full" data-act="another">Data lokasi berikutnya</button><div class="actions"><button class="secondary" data-act="history">Lihat riwayat</button></div>`;}
 if(s.page==='history'){html+=title('Riwayat Pendataan')+(s.history.length?s.history.map(h=>`<div class="review-row"><strong>${esc(locationDisplayName(h.room,h.areaPosition))}</strong><div class="muted">${h.division?`${esc(h.division)} · `:""}${esc(h.property)} &middot; ${esc(h.areaPosition||'Area belum dicatat')} &middot; ${esc(h.position||'Kode posisi belum dicatat')} &middot; ${esc(h.time)}</div><span class="good small">Tersimpan</span></div>`).join(''):'<p>Belum ada pendataan.</p>')+`<div class="actions"><button data-act="home">Pendataan lokasi</button></div>`;}
 root.innerHTML=html;}
-function item(id,name,opts){let d=get(id);return `<section class="item" id="item-${id}"><h3 class="item-title-row">${itemHeading(name)} <span class="good item-check" id="mark-${id}">${done(id)?'✓':''}</span></h3><div class="field"><label for="spec-${id}">Spesifikasi material</label><select id="spec-${id}" data-spec="${id}" class="${d.spec?'material-selected':''}">${options([...opts,'Lainnya','Tidak Ada','Belum diketahui'].map(x=>[x,x]),d.spec,'Pilih spesifikasi')}</select></div><div class="field ${d.spec==='Lainnya'?'':'hidden'}" id="custom-wrap-${id}"><label for="custom-${id}">Spesifikasi lainnya <span class="muted">(wajib diisi)</span></label><input id="custom-${id}" data-custom="${id}" value="${esc(d.custom||'')}" autocomplete="off" aria-required="${d.spec==='Lainnya'}" ${d.spec==='Lainnya'?'required':''}><p class="muted small" id="custom-help-${id}">Isi spesifikasi material yang belum tercantum.</p></div></section>`}
+function openChecklistTools(itemId) {
+  const dialog = document.getElementById('checklist-tools');
+  const entry = all.find(([id]) => id === itemId);
+  if (itemId && !entry) return;
+  const canManage = rmisLive && activeProfile?.role === 'admin';
+  const scope = { division_id: s.division, position_id: rmisPosition(s.position)?.master_id, item_id: itemId };
+  const materials = rmisOptions(s.position).filter(row => row.item_id === itemId &&
+    row.option_type === 'REGULER' && !row.retired);
+  const content = !entry
+    ? '<div class="field"><label for="component-choice">Komponen</label><select id="component-choice" name="component" required>' +
+      options(all.map(([id,name]) => [id,name]), '', 'Pilih komponen') + '</select></div>'
+    : canManage
+      ? '<div class="field"><label for="new-spec">Spesifikasi baru</label><input id="new-spec" name="value" maxlength="120" required></div>' +
+        '<div class="field"><label for="remove-spec">Opsi yang akan dihapus</label><select id="remove-spec" name="remove">' +
+        options(materials.map(row => [row.option_id,row.option_value]), '', 'Pilih opsi') + '</select></div>'
+      : '<p class="muted">Usulkan spesifikasi baru untuk ditinjau admin.</p>';
+  const actions = !entry ? '<button type="submit">Buka komponen</button>'
+    : canManage ? '<button type="submit">Tambah</button><button type="button" class="danger-button" data-remove>Hapus opsi</button>'
+    : '<button type="button" data-propose>Ajukan spesifikasi</button>';
+  dialog.innerHTML = '<form class="modal-body"><div class="modal-header"><div><h2 id="checklist-tools-title">' +
+    (entry ? 'Edit Spesifikasi</h2><p class="muted">' + esc(entry[1]) + '</p>' : 'Pilih Komponen</h2>') +
+    '</div><button type="button" class="secondary" data-close>Tutup</button></div>' + content +
+    '<p class="error" role="status"></p><div class="modal-actions">' + actions + '</div></form>';
+  const form = dialog.querySelector('form');
+  const status = dialog.querySelector('[role="status"]');
+  let busy = false;
+  dialog.oncancel = event => { if (busy) event.preventDefault(); };
+  async function change(value, removeId) {
+    if (busy) return;
+    busy = true;
+    form.inert = true;
+    try {
+      await rmisCall('changeMaterialOption', scope, value, removeId);
+      await loadMasterData();
+      dialog.close();
+      render();
+      document.getElementById('spec-' + itemId)?.focus();
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      busy = false;
+      form.inert = false;
+    }
+  }
+  form.onsubmit = event => {
+    event.preventDefault();
+    if (!entry) {
+      const select = document.getElementById('spec-' + form.elements.component.value);
+      dialog.close();
+      select?.focus();
+    } else if (canManage) {
+      const value = form.elements.value.value.trim();
+      if (value) change(value, null);
+      else status.textContent = 'Isi spesifikasi baru.';
+    }
+  };
+  form.onclick = event => {
+    if (busy) return;
+    if (event.target.closest('[data-close]')) dialog.close();
+    if (event.target.closest('[data-propose]')) {
+      dialog.close();
+      openRequestDialog('SPESIFIKASI_MATERIAL', itemId);
+    }
+    if (event.target.closest('[data-remove]')) {
+      const select = form.elements.remove;
+      if (!select.value) { status.textContent = 'Pilih opsi yang akan dihapus.'; return; }
+      if (confirm('Hapus opsi ini dari daftar pilihan baru?')) change('', select.value);
+    }
+  };
+  dialog.showModal();
+}
+function item(id,name,opts){let d=get(id);return `<section class="item" id="item-${id}"><h3 class="item-title-row">${itemHeading(name)} <span class="good item-check" id="mark-${id}">${done(id)?'✓':''}</span></h3><div class="field"><label for="spec-${id}">Spesifikasi material</label><div class="location-control"><select id="spec-${id}" data-spec="${id}" class="${d.spec?'material-selected':''}">${options([...new Set([...opts,'Lainnya','Tidak Ada','Belum diketahui',...(d.spec?[d.spec]:[])])].map(x=>[x,x]),d.spec,'Pilih spesifikasi')}</select><button type="button" class="secondary" data-act="edit-spec" data-item="${esc(id)}" aria-haspopup="dialog">Edit</button></div></div><div class="field ${d.spec==='Lainnya'?'':'hidden'}" id="custom-wrap-${id}"><label for="custom-${id}">Spesifikasi lainnya <span class="muted">(wajib diisi)</span></label><input id="custom-${id}" data-custom="${id}" value="${esc(d.custom||'')}" autocomplete="off" aria-required="${d.spec==='Lainnya'}" ${d.spec==='Lainnya'?'required':''}><p class="muted small" id="custom-help-${id}">Isi spesifikasi material yang belum tercantum.</p></div></section>`}
 function updateItem(id){let d=get(id);document.getElementById('spec-'+id).classList.toggle('material-selected',!!d.spec);document.getElementById('custom-wrap-'+id).classList.toggle('hidden',d.spec!=='Lainnya');const custom=document.getElementById('custom-'+id),required=d.spec==='Lainnya';custom.required=required;custom.setAttribute('aria-required',String(required));document.getElementById('mark-'+id).textContent=done(id)?'✓':'';updateProgress();}
 const settingsDialog=document.getElementById('settings-dialog'),masterAddDialog=document.getElementById('master-add-dialog'),locationDialog=document.getElementById('location-dialog'),positionRecordDialog=document.getElementById('position-record-dialog'),requestDialog=document.getElementById('request-dialog');
 document.getElementById('open-settings').addEventListener('click',openSettingsDialog);
@@ -748,7 +820,6 @@ settingsDialog.addEventListener('click',async e=>{
 settingsDialog.addEventListener('click',async e=>{const refresh=e.target.closest('[data-refresh-requests]');if(refresh){loadAdminRequests();return;}const action=e.target.closest('[data-request-action]');if(action){reviewCatalogRequest(action.dataset.requestId,action.dataset.requestAction);return;}});
 requestDialog.addEventListener('submit',async e=>{const form=e.target.closest('#catalog-request-form');if(!form)return;e.preventDefault();const type=form.elements.request_type.value,positionId=form.elements.position_id.value,itemId=form.elements.item_id.value,value=String(form.elements.value.value||'').trim();if(!getDivision()){renderRequestDialog('Pilih divisi terlebih dahulu.');return;}if(['KOMPONEN','SPESIFIKASI_MATERIAL'].includes(type)&&!positionId){renderRequestDialog('Pilih kode posisi.');return;}if(type==='SPESIFIKASI_MATERIAL'&&!itemId){renderRequestDialog('Pilih komponen.');return;}const b=form.querySelector('[type=submit]');b.disabled=true;b.textContent='Mengirim...';try{await rmisCall('rmisAjukanUsulan',{division_id:s.division,request_type:type,value,property_id:s.property||null,location_id:rmisLocation()?.id||null,position_id:['KOMPONEN','SPESIFIKASI_MATERIAL'].includes(type)?positionId:null,item_id:type==='SPESIFIKASI_MATERIAL'?itemId:null});requestDialog.close();proposalNotice='Usulan berhasil dikirim ke Admin.';render();}catch(err){renderRequestDialog(err.message||'Gagal mengirim usulan.');document.getElementById('request-value').value=value;}});
 settingsDialog.addEventListener('click',e=>{const refresh=e.target.closest('[data-refresh-requests]');if(refresh){loadAdminRequests();return;}const action=e.target.closest('[data-request-action]');if(action){reviewCatalogRequest(action.dataset.requestId,action.dataset.requestAction);return;}});
-requestDialog.addEventListener('submit',async e=>{const form=e.target.closest('#catalog-request-form');if(!form)return;e.preventDefault();const type=form.elements.request_type.value,positionId=form.elements.position_id.value,itemId=form.elements.item_id.value,value=String(form.elements.value.value||'').trim();if(!getDivision()){renderRequestDialog('Pilih divisi terlebih dahulu.');return;}if(['KOMPONEN','SPESIFIKASI_MATERIAL'].includes(type)&&!positionId){renderRequestDialog('Pilih kode posisi.');return;}if(type==='SPESIFIKASI_MATERIAL'&&!itemId){renderRequestDialog('Pilih komponen.');return;}const b=form.querySelector('[type=submit]');b.disabled=true;b.textContent='Mengirim...';try{await rmisCall('rmisAjukanUsulan',{division_id:s.division,request_type:type,value,property_id:s.property||null,location_id:rmisLocation()?.id||null,position_id:['KOMPONEN','SPESIFIKASI_MATERIAL'].includes(type)?positionId:null,item_id:type==='SPESIFIKASI_MATERIAL'?itemId:null});requestDialog.close();proposalNotice='Usulan berhasil dikirim ke Admin.';render();}catch(err){renderRequestDialog(err.message||'Gagal mengirim usulan.');document.getElementById('request-value').value=value;}});
 masterAddDialog.addEventListener('submit',async e=>{
   const form=e.target.closest('form[data-add-master]');if(!form)return;e.preventDefault();if(masterSaving)return;
   const input=form.elements.value,kind=form.dataset.addMaster,raw=String(input.value||'').trim(),value=['property','division'].includes(kind)?raw.toLocaleUpperCase('id-ID'):raw,normalized=normalizeMasterValue(value);if(!normalized)return;
@@ -813,6 +884,8 @@ root.addEventListener('click',e=>{
     case 'saved-position':openPositionRecordDialog(b.dataset.position);break;
     case 'restore-position':restorePosition(b.dataset.position);break;
     case 'mark-position-absent':markPositionAbsent();break;
+    case 'pick-component':openChecklistTools();break;
+    case 'edit-spec':openChecklistTools(b.dataset.item);break;
     case 'request':openRequestDialog();break;
     case 'start':{
       if(!getDivision()||!prop()||!s.areaPosition||!s.room.trim())return;
@@ -846,7 +919,7 @@ function rmisGroups(name) {
   const items = new Map();
   for (const r of rmisOptions(name)) {
     if (!items.has(r.item_id)) items.set(r.item_id, [r.item_id, r.item_order + '. ' + r.item_name, []]);
-    if (!['Lainnya', 'Tidak Ada', 'Belum diketahui'].includes(r.option_value)) items.get(r.item_id)[2].push(r.option_value);
+    if (!r.retired && !['Lainnya', 'Tidak Ada', 'Belum diketahui'].includes(r.option_value)) items.get(r.item_id)[2].push(r.option_value);
   }
   return items.size ? [{name, items:[...items.values()]}] : [];
 }
