@@ -1101,7 +1101,7 @@ async function startAuthenticatedApp() {
   const authApp = document.getElementById('auth-app');
   const app = document.getElementById('app');
   const settingsButton = document.getElementById('open-settings');
-  const {createDcipApi} = await import('./dcip-api.js');
+  const {createDcipApi} = await import('./dcip-api.js?v=806f540');
   dcipApi = await createDcipApi();
   async function showSession() {
     const profile = await dcipApi.currentProfile();
