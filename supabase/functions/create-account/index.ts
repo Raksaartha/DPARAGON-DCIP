@@ -72,7 +72,7 @@ Deno.serve(async (req: Request) => {
     return respond(400, { error: 'Nama petugas harus 2–80 karakter.' })
   }
   if (password.length < 8 || password.length > 72) {
-    return respond(400, { error: 'Kata sandi harus 10–72 karakter.' })
+    return respond(400, { error: 'Kata sandi harus 8–72 karakter.' })
   }
   if (propertyIds.length === 0) return respond(400, { error: 'Pilih setidaknya satu properti untuk akun petugas.' })
 
