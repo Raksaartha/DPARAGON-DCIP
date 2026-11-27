@@ -310,6 +310,7 @@ function ensureSupportSheets_(spreadsheet) {
   const checkbox = SpreadsheetApp.newDataValidation().requireCheckbox().setAllowInvalid(false)
     .setHelpText('Centang setelah usulan mulai ditindaklanjuti.').build();
   proposals.getRange(2, 5, Math.max(1, proposals.getMaxRows() - 1), 1).setDataValidation(checkbox);
+  proposals.getRange(2, 6, Math.max(1, proposals.getMaxRows() - 1), 1).clearDataValidations();
 
   let status = spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.positionStatus);
   if (!status) status = spreadsheet.insertSheet(DCIP_SYNC.SHEETS.positionStatus);
@@ -334,9 +335,9 @@ function handleUsulanConfirmation(e) {
   lock.waitLock(30000);
   try {
     const requestId = String(sheet.getRange(row, 6).getDisplayValue() || '').trim();
-    if (!requestId) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
       sheet.getRange(row, 5).setValue(false);
-      sheet.getParent().toast('ID usulan belum tersinkron. Jalankan sinkronisasi terlebih dahulu.', 'USULAN', 6);
+      sheet.getParent().toast('Baris contoh/manual tanpa ID database tidak dapat dikonfirmasi.', 'USULAN', 6);
       return;
     }
     try {
