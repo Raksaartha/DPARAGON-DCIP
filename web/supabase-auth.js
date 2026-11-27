@@ -35,6 +35,12 @@ export async function createPetugasAccount(supabase, { username, displayName, pa
       city,
     },
   })
-  if (error) throw new Error(data?.error || error.message || 'Gagal membuat akun petugas.')
+  if (error) {
+    const response = error.context;
+    const detail = response instanceof Response
+      ? await response.json().catch(() => null)
+      : null;
+    throw new Error(detail?.error || 'Gagal menghubungi layanan pembuatan akun. Silakan coba lagi.');
+  }
   return data.user
 }
