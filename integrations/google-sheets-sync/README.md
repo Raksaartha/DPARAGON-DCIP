@@ -20,7 +20,7 @@ Script tidak memerlukan deployment Web App. Sinkron otomatis memakai trigger App
 
    | Nama | Nilai |
    | --- | --- |
-   | `SPREADSHEET_ID` | ID dari URL spreadsheet `DATABASE CDP` |
+   | `SPREADSHEET_ID` | `1pnQHeGv1yMu_vqxC3lC3b1aEF5d6ZlJ4RRrX7CPSaK8` |
    | `SUPABASE_URL` | `https://bzbjnuqjfavccsdbnpdr.supabase.co` |
    | `SUPABASE_SECRET_KEY` | Secret API key Supabase (server-side), bukan Publishable key |
 
