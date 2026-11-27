@@ -112,7 +112,7 @@ function loadDatabase_(config) {
   return result;
 }
 
-function fetchTable_(config, table) {
+function fetchTable_(config, table, filter = '') {
   const rows = [];
   for (let offset = 0; ; offset += DCIP_SYNC.PAGE_SIZE) {
     const headers = {
@@ -124,7 +124,7 @@ function fetchTable_(config, table) {
     // Opaque sb_secret keys are API gateway keys, not JWTs. Legacy service_role
     // keys are JWTs and also belong in Authorization.
     if (!config.secretKey.startsWith('sb_secret_')) headers.Authorization = 'Bearer ' + config.secretKey;
-    const response = UrlFetchApp.fetch(config.supabaseUrl + '/rest/v1/' + encodeURIComponent(table) + '?select=*', {
+    const response = UrlFetchApp.fetch(config.supabaseUrl + '/rest/v1/' + encodeURIComponent(table) + '?select=*' + filter, {
       method: 'get', headers, muteHttpExceptions: true
     });
     const code = response.getResponseCode();
@@ -337,9 +337,9 @@ function ensureSupportSheets_(spreadsheet) {
   }
   const statusHeaders = status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).getDisplayValues()[0];
   if (statusHeaders.every(value => !value)) status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).setValues([DCIP_SYNC.HEADERS.positionStatus]);
-  if (!status.getRange('K1').getValue()) status.getRange('J1').setValue('status_key');
+  if (!status.getRange('K1').getValue()) status.getRange('K1').setValue('status_key');
   status.setFrozenRows(1);
-  status.getRange(1, 1, 1, 9).setBackground('#142f51').setFontColor('#ffffff')
+  status.getRange(1, 1, 1, 10).setBackground('#142f51').setFontColor('#ffffff')
     .setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
   status.hideColumns(11);
 
@@ -478,3 +478,86 @@ function ensureRowCapacity_(sheet, requiredRow) {
   if (requiredRow > currentRows) sheet.insertRowsAfter(currentRows, requiredRow - currentRows);
 }
 
+
+/** Register the deployed Web App without exposing the shared secret in logs. */
+function setupDcipLiveSync() {
+  const config = getConfig_();
+  const url = ScriptApp.getService().getUrl();
+  if (!url || !url.endsWith('/exec')) throw new Error('Deploy sebagai Web app sebelum mengaktifkan live sync.');
+  const properties = PropertiesService.getScriptProperties();
+  let secret = properties.getProperty('DCIP_LIVE_SYNC_SECRET');
+  if (!secret) {
+    secret = Utilities.getUuid() + Utilities.getUuid();
+    properties.setProperty('DCIP_LIVE_SYNC_SECRET', secret);
+  }
+  const headers = {apikey: config.secretKey, 'Content-Type': 'application/json'};
+  if (!config.secretKey.startsWith('sb_secret_')) headers.Authorization = 'Bearer ' + config.secretKey;
+  const response = UrlFetchApp.fetch(config.supabaseUrl + '/rest/v1/rpc/configure_dcip_live_sync', {
+    method: 'post', headers, payload: JSON.stringify({p_url: url, p_secret: secret}), muteHttpExceptions: true
+  });
+  if (response.getResponseCode() >= 300) throw new Error('Registrasi live sync gagal (HTTP ' + response.getResponseCode() + ').');
+  console.log('Live sync terdaftar. Sinkronisasi berkala tetap aktif.');
+}
+
+function doPost(event) {
+  const reply = result => ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  let body;
+  try { body = JSON.parse(event?.postData?.contents || '{}'); }
+  catch (_) { return reply({ok:false}); }
+  const secret = PropertiesService.getScriptProperties().getProperty('DCIP_LIVE_SYNC_SECRET');
+  if (!secret || body.secret !== secret || !isUuid_(body.id) || !Object.hasOwn(DCIP_SYNC.SHEETS.inspection, body.division)) {
+    return reply({ok:false});
+  }
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) return reply({ok:false});
+  try {
+    syncOneInspection_(getConfig_(), body.id, body.division);
+    return reply({ok:true});
+  } catch (error) {
+    console.error('Live sync gagal: ' + error.message);
+    return reply({ok:false});
+  } finally { lock.releaseLock(); }
+}
+
+function syncOneInspection_(config, id, division) {
+  const spreadsheet = SpreadsheetApp.openById(config.spreadsheetId);
+  const name = DCIP_SYNC.SHEETS.inspection[division];
+  const sheet = spreadsheet.getSheetByName(name);
+  const headers = DCIP_SYNC.HEADERS.details;
+  validateSheetHeaders_(sheet, headers);
+  const filter = '&id=eq.' + encodeURIComponent(id) + '&division_id=eq.' + encodeURIComponent(division);
+  const inspections = fetchTable_(config, 'inspections', filter);
+  const stateSheet = getStateSheet_(spreadsheet);
+  const state = readSyncState_(stateSheet);
+  let rows = [];
+  if (inspections.length) {
+    const db = {inspections, inspection_answers: fetchTable_(config, 'inspection_answers', '&inspection_id=eq.' + encodeURIComponent(id))};
+    for (const table of ['divisions','properties','areas','position_codes','locations','user_profiles']) {
+      db[table] = fetchTable_(config, table);
+    }
+    const master = DCIP_SYNC.SHEETS.master;
+    state[master] = syncSheet_(spreadsheet, master, DCIP_SYNC.HEADERS.master, buildMasterRows_(db),
+      row => row[0] + '|' + row[1], state[master] || []);
+    rows = buildInspectionRows_(db, division);
+  }
+  const byKey = new Map(rows.map(row => [row[0], row]));
+  const prefix = 'SUPABASE-' + id + '-';
+  const last = sheet.getLastRow();
+  const existing = last > 1 ? sheet.getRange(2, 1, last - 1, 1).getValues() : [];
+  const remaining = new Map(byKey);
+  existing.forEach(([key], index) => {
+    if (!String(key).startsWith(prefix)) return;
+    const target = sheet.getRange(index + 2, 1, 1, headers.length);
+    if (remaining.has(key)) {
+      target.setValues([remaining.get(key)]);
+      remaining.delete(key);
+    } else target.clearContent();
+  });
+  if (remaining.size) {
+    const start = sheet.getLastRow() + 1;
+    ensureRowCapacity_(sheet, start + remaining.size - 1);
+    sheet.getRange(start, 1, remaining.size, headers.length).setValues([...remaining.values()]);
+  }
+  state[name] = [...(state[name] || []).filter(key => !key.startsWith(prefix)), ...byKey.keys()];
+  writeSyncState_(stateSheet, state);
+}
