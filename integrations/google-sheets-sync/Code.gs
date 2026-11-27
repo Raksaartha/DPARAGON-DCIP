@@ -13,7 +13,7 @@ const DCIP_SYNC = {
     options: ['option_id','division_code','position_code_id','item_order','item_id','item_name','option_order','option_value','option_type','source'],
     details: ['inspection_detail_id','inspection_id','location_id','property_id','area_id','location_name','position_code_id','item_id','item_name','option_id','option_value','custom_specification','created_at','updated_at','created_by','updated_by'],
     proposals: ['NO','DIVISI','USULAN','KETERANGAN','KONFIRMASI','request_id'],
-    positionStatus: ['NO','KOTA','PROPERTI','AREA','NAMA/NOMOR LOKASI','KODE POSISI','STATUS','PETUGAS UPDATE','TANGGAL UPDATE','status_key']
+    positionStatus: ['NO','DIVISI','KOTA','PROPERTI','AREA','NAMA/NOMOR LOKASI','KODE POSISI','STATUS','PETUGAS UPDATE','TANGGAL UPDATE','status_key']
   }
 };
 
@@ -45,7 +45,7 @@ function syncDcipToSheets() {
     );
     next[DCIP_SYNC.SHEETS.positionStatus] = syncSheet_(
       spreadsheet, DCIP_SYNC.SHEETS.positionStatus, DCIP_SYNC.HEADERS.positionStatus,
-      buildPositionStatusRows_(db), row => row[9], previous[DCIP_SYNC.SHEETS.positionStatus] || []
+      buildPositionStatusRows_(db), row => row[10], previous[DCIP_SYNC.SHEETS.positionStatus] || []
     );
 
     Object.entries(DCIP_SYNC.SHEETS.inspection).forEach(([division, sheetName]) => {
@@ -106,7 +106,7 @@ function getConfig_() {
 }
 
 function loadDatabase_(config) {
-  const names = ['divisions','properties','areas','position_codes','locations','material_items','material_options','inspections','inspection_answers','user_profiles','location_position_status','catalog_requests'];
+  const names = ['divisions','properties','areas','position_codes','locations','material_items','material_options','inspections','inspection_answers','user_profiles','division_position_status','catalog_requests'];
   const result = {};
   names.forEach(name => result[name] = fetchTable_(config, name));
   return result;
@@ -189,13 +189,15 @@ function buildPositionStatusRows_(db) {
   const positionById = new Map(db.position_codes.map(row => [row.id, row]));
   const locationById = new Map(db.locations.map(row => [row.id, row]));
   const profileById = new Map(db.user_profiles.map(row => [row.id, row]));
-  return db.location_position_status.slice()
+  const divisionById = new Map(db.divisions.map(row => [row.id, row]));
+  return db.division_position_status.slice()
     .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))
     .map((row, index) => {
       const location = locationById.get(row.location_id) || {};
       const updater = profileById.get(row.updated_by) || {};
-      const key = row.location_id + '|' + row.position_id;
-      return [index + 1, propertyById.get(row.property_id)?.city || '', propertyById.get(row.property_id)?.name || row.property_id,
+      const key = [row.division_id, row.location_id, row.position_id].join('|');
+      return [index + 1, divisionById.get(row.division_id)?.name || row.division_id,
+        propertyById.get(location.property_id)?.city || '', propertyById.get(location.property_id)?.name || location.property_id || '',
         areaById.get(location.area_id)?.name || location.area_id || '', location.name || '',
         positionById.get(row.position_id)?.name || row.position_id, row.status,
         updater.display_name || updater.username || row.updated_by || '', row.updated_at ? new Date(row.updated_at) : '', key];
@@ -335,11 +337,11 @@ function ensureSupportSheets_(spreadsheet) {
   }
   const statusHeaders = status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).getDisplayValues()[0];
   if (statusHeaders.every(value => !value)) status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).setValues([DCIP_SYNC.HEADERS.positionStatus]);
-  if (!status.getRange('J1').getValue()) status.getRange('J1').setValue('status_key');
+  if (!status.getRange('K1').getValue()) status.getRange('J1').setValue('status_key');
   status.setFrozenRows(1);
   status.getRange(1, 1, 1, 9).setBackground('#142f51').setFontColor('#ffffff')
     .setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
-  status.hideColumns(10);
+  status.hideColumns(11);
 
   Object.values(DCIP_SYNC.SHEETS.inspection).forEach(name => {
     let raw = spreadsheet.getSheetByName(name);
