@@ -2,60 +2,539 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DPARAGON DCIP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1565c0">
+<meta name="color-scheme" content="light">
+<title>D'Paragon | Pendataan Lokasi</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f5f7fa;color:#17212b;font:16px system-ui,sans-serif}
-header{background:#1565c0;color:white;padding:20px}
-header div,main{max-width:600px;margin:auto}
-main{padding:20px 16px}
-section{background:white;border:1px solid #d4dde7;border-radius:12px;padding:20px;margin-bottom:16px}
-h1,h2{margin:0 0 16px}
-label{display:block;margin:12px 0 6px}
-input:not([type=checkbox]),button{font:inherit;min-height:48px;border:1px solid #b8c7d8;border-radius:8px;padding:10px;width:100%}
-button{background:#1565c0;color:white;font-weight:650;cursor:pointer;margin-top:14px;border:0}
-button:disabled{opacity:.6}
-fieldset{margin:16px 0 0;border:1px solid #d4dde7;border-radius:8px}
-fieldset label{display:flex;align-items:center;gap:10px}
-#status{min-height:1.5em}
+:root{color-scheme:light;--blue:#1565c0;--text:#17212b;--muted:#526475;--border:#d4dde7;--light:#eaf3ff;--green:#166b49}*{box-sizing:border-box}html{font-family:Roboto,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:#fff}body{margin:0;min-height:100vh;min-height:100dvh;line-height:1.5;font-size:16px}header{background:var(--blue);color:#fff;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}.inner,main{max-width:640px;margin:auto;width:100%}.brand{font-size:22px;font-weight:750;letter-spacing:.04em}.subtitle{font-size:14px}main{padding:20px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow-wrap:anywhere}h1{font-size:23px;line-height:1.25;margin:0 0 8px}h2{font-size:19px;line-height:1.4;margin:20px 0 12px}p{margin:0 0 16px}.muted{color:var(--muted);font-size:14px}.demo{font-size:13px;color:#526475;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:20px}label,legend{font-weight:600}label{display:block;margin:0 0 6px}select,input,textarea,button{font:inherit;color:inherit;min-width:0}select,input,textarea{display:block;width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:white;min-height:48px}select{padding-right:30px}textarea{resize:vertical;min-height:90px}button{min-height:48px;padding:12px 16px;border-radius:8px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:650;cursor:pointer;white-space:normal;overflow-wrap:anywhere}button.secondary{background:#fff;color:var(--blue)}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #81b9f7;outline-offset:2px}.field{margin:0 0 20px}.full{width:100%}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}.actions>*{flex:1 1 135px}.back{display:inline-block;margin-bottom:14px}.progress{height:8px;background:#e4edf8;border-radius:10px;overflow:hidden;margin:8px 0 16px}.progress>span{display:block;height:100%;background:var(--blue)}.between{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}.item{border-bottom:1px solid var(--border);padding:18px 0}.item h3{font-size:17px;margin:0 0 12px}.item .field:last-child{margin-bottom:0}fieldset{border:0;padding:0;margin:0;min-width:0}legend{padding:0;margin-bottom:8px}.conditions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,116px),1fr));gap:8px}.choice{position:relative;margin:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 8px;min-height:48px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-weight:500;text-align:center;overflow-wrap:anywhere}.choice input{appearance:auto;width:18px;height:18px;min-height:0;flex:0 0 18px;margin:0;accent-color:var(--blue)}.choice:has(input:checked){background:var(--light);border-color:var(--blue);color:#0d47a1}.review-row{padding:14px 0;border-bottom:1px solid var(--border)}.review-row button{font-size:14px}.good{color:var(--green);font-weight:600}.error{color:#a82020;font-size:14px}.success{text-align:center;padding:26px 0}.check{font-size:44px;color:var(--green);line-height:1.2}.footer{color:var(--muted);font-size:12px;text-align:center;margin:32px 0 0}.preview{display:block;max-width:100%;height:auto;border-radius:8px;margin-top:10px}.photo{font-size:16px;max-width:100%}.small{font-size:14px}.hidden{display:none!important}@media(max-width:350px){main{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}.actions>*{flex-basis:100%}.conditions{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* Explicit light canvas, including empty space outside the form. */
+html, body { background-color: #FFFFFF !important; color-scheme: light; }
+body { color: #17212B; }
+main, #app { background-color: #FFFFFF; }
+@media (prefers-color-scheme: dark) { html, body, main, #app { background-color: #FFFFFF !important; color-scheme: light; } }
+select.material-selected { background-color: #E7F6EC; border-color: #16845B; color: #14532D; }
+.check-progress{position:sticky;top:0;z-index:5;background:#fff;padding:12px 0 8px;margin:0 0 8px;box-shadow:0 1px 0 rgba(212,221,231,.85)}.check-progress .progress{margin:8px 0 0}
+select:required:invalid{color:#8a94a3}select option{color:var(--text)}
+.step-kicker{display:inline-flex;align-items:center;margin:8px 0 10px;padding:6px 10px;border-radius:999px;background:#eaf3ff;color:#0d47a1;font-size:12px;font-weight:700;letter-spacing:.03em}.identity-panel{padding:16px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;margin:16px 0 8px}.identity-panel .field:last-of-type{margin-bottom:0}.identity-panel>button.full{margin-top:16px}.item h3{display:flex;align-items:flex-start;gap:10px}.item-number{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;min-height:30px;border-radius:8px;background:#eaf3ff;color:#1565c0;font-size:13px;font-weight:750}.item-name{flex:1;min-width:0}.item-check{flex:0 0 auto}.review-entry{align-items:flex-start}.review-main{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}.review-name{display:flex;align-items:flex-start;gap:10px}.review-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.review-status{display:inline-flex;align-items:center;min-height:28px;padding:3px 10px;border:1px solid transparent;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}.review-status.is-complete{background:#e7f6ec;border-color:#16845b;color:#14532d}.review-status.is-missing{background:#fff7ed;border-color:#fdba74;color:#9a3412}.review-spec{color:var(--muted);font-size:14px;overflow-wrap:anywhere}.review-entry>button{flex:0 0 auto;min-width:72px}@media(max-width:350px){.identity-panel{padding:14px}}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand-copy{min-width:0}.settings-button{flex:0 0 48px;width:48px;height:48px;padding:0;display:grid;place-items:center;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.5);font-size:22px}.settings-button:hover{background:rgba(255,255,255,.22)}.location-control{display:flex;align-items:center;gap:8px}.location-control select,.location-control input{flex:1;min-width:0;width:0;height:48px;min-height:48px;padding:8px 36px 8px 12px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.plus-button{box-sizing:border-box;flex:0 0 48px;width:48px;height:48px;min-height:48px;padding:0;display:grid;place-items:center;font-size:25px;line-height:1;border-radius:8px}.master-picker{display:flex;align-items:flex-end;gap:8px}.master-picker .field{flex:1;min-width:0;margin:0}.master-picker select{height:48px;min-height:48px;padding-top:8px;padding-bottom:8px}.master-delete{display:inline-flex;align-items:center;gap:6px;width:auto;min-height:32px;margin-top:6px;padding:4px 0;background:transparent;color:#a82020;border:0;font-size:14px}.master-delete:hover:not(:disabled){background:transparent;text-decoration:underline}.master-delete .delete-icon{width:16px;height:16px;flex:0 0 16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.master-add{margin-top:14px}.master-add label{font-size:14px}.master-empty{margin:8px 0 0;font-size:13px;color:var(--muted)}.master-add-dialog{width:min(460px,calc(100% - 24px))}.uppercase-input{text-transform:uppercase}.modal{width:min(600px,calc(100% - 24px));max-height:calc(100dvh - 32px);margin:auto;padding:0;border:0;border-radius:14px;box-shadow:0 18px 56px rgba(15,23,42,.28);overflow:auto}.modal::backdrop{background:rgba(15,23,42,.48)}.modal-body{padding:20px}.modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 18px}.modal-header h2{margin:0 0 4px}.modal-header p{margin:0}.modal-close{flex:0 0 48px;width:48px;height:48px;padding:0;border-radius:50%;font-size:22px}.settings-section{padding-top:16px;margin-top:16px;border-top:1px solid var(--border)}.settings-section h3{margin:0 0 10px;font-size:16px}.settings-form{display:flex;align-items:flex-end;gap:8px}.settings-form .field{flex:1;min-width:0;margin:0}.settings-form button.plus-button{flex:0 0 48px}.master-list{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px}.master-list li{padding:8px 10px;border:1px solid var(--border);border-radius:8px;overflow-wrap:anywhere}.modal-notice{padding:10px 12px;border-radius:8px;background:#eaf3ff;color:#0d47a1;font-size:14px}.modal-notice.error{background:#fff1f2;color:#a82020}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.storage-note{font-size:12px;color:var(--muted);margin-top:14px}@media(max-width:420px){.modal-body{padding:16px}.settings-form button.plus-button{flex-basis:48px}.settings-form{align-items:stretch}}
+.check-top-actions{margin:0 0 14px}.check-top-actions>*{flex:1 1 0;min-width:0}.danger-button{background:#c62828;border-color:#c62828;color:#fff}.danger-button:hover:not(:disabled){background:#a82020;border-color:#a82020}
+.saved-positions{padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--border)}.saved-positions-label{margin:0 0 4px}.saved-positions-help{margin:0 0 10px}.position-chip-list{display:flex;flex-wrap:wrap;gap:8px}.position-chip{width:auto;min-height:38px;padding:6px 14px;border-radius:999px;background:#e7f6ec;border:1px solid #16845b;color:#14532d;font-size:14px}.position-chip:hover:not(:disabled){background:#d3f1df}.edit-position-display{display:flex;align-items:center;min-height:48px;padding:10px 12px;border:1px solid #16845b;border-radius:8px;background:#e7f6ec;color:#14532d;font-weight:650}.position-record-dialog-actions{flex-wrap:wrap}.position-record-dialog-actions>*{flex:1 1 140px}.position-record-dialog-actions .danger-button{color:#fff}
+.check-location-header{padding:12px;background:#eaf3ff;border:1px solid #cfe2fb;border-radius:10px;margin-bottom:14px}.check-location-header h1{margin-bottom:6px;color:#0d47a1}.check-identity-panel .check-location-header .muted{margin-bottom:0}.saved-positions{padding:12px;margin:0 0 16px;background:#e7f6ec;border:1px solid #b7e4c7;border-radius:10px}.saved-positions-label{color:#14532d;text-transform:uppercase}.saved-positions-help{font-size:12px;line-height:1.4}
+.check-location-header{padding:0;background:transparent;border:0;border-radius:0;margin:0 0 14px}.check-location-header h1{color:var(--text)}.saved-positions{padding:14px 0 0;margin:14px 0 0;background:transparent;border:0;border-top:1px solid var(--border);border-radius:0}.saved-positions-label{color:var(--text)}.position-chip{background:#f1f5f9;border-color:var(--border);color:var(--text)}.position-chip:hover:not(:disabled){background:#eaf3ff}.edit-position-display{background:#f1f5f9;border-color:var(--border);color:var(--text)}.checklist-position-picker{padding:16px 16px 0}.checklist-position-picker .field{margin:0;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.check-identity-panel{margin:0 0 14px}.check-identity-panel .muted{margin-bottom:14px}.checklist-panel{margin:12px 0 20px;overflow:hidden;background:#f8fafc;border:1px solid var(--border);border-radius:12px}.checklist-group{margin:0}.checklist-panel .item{padding:18px 16px;border-bottom:1px solid var(--border)}.checklist-panel .checklist-group:last-child .item:last-child{border-bottom:0}.checklist-panel .checklist-group>h2{margin:0;padding:16px;border-bottom:1px solid var(--border);font-size:17px}
 </style>
-</head>
-<body>
-<header><div><strong>DPARAGON DCIP</strong></div></header>
-<main>
-<p id="status" role="status"></p>
-<section id="login" hidden>
-<h1>Masuk</h1>
-<form id="login-form">
-<label for="username">ID pengguna</label>
-<input id="username" name="username" autocomplete="username" required maxlength="32">
-<label for="password">Kata sandi</label>
-<input id="password" name="password" type="password" autocomplete="current-password" required maxlength="72">
-<button>Masuk</button>
-</form>
-</section>
-<section id="account" hidden>
-<h1 id="display-name"></h1>
-<p id="role"></p>
-<h2>Properti yang dapat diakses</h2>
-<ul id="property-list"></ul>
-<button id="logout" type="button">Keluar</button>
-</section>
-<section id="admin" hidden>
-<h2>Buat akun Petugas</h2>
-<form id="create-form">
-<label for="staff-name">Nama petugas</label>
-<input id="staff-name" name="displayName" minlength="2" maxlength="80" required>
-<label for="staff-id">ID pengguna</label>
-<input id="staff-id" name="username" autocomplete="off" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,31}" required>
-<label for="staff-password">Kata sandi</label>
-<input id="staff-password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="72" required>
-<fieldset id="property-picker"><legend>Akses properti</legend></fieldset>
-<button>Buat akun</button>
-</form>
-</section>
-</main>
-<script type="module" src="./app.js"></script>
-</body>
-</html>
+</head><body>
+<header><div class="inner header-row"><div class="brand-copy"><div class="brand">D'PARAGON</div><div class="subtitle">Room Material Inspection</div></div><a id="manage-accounts" class="hidden" href="./accounts.html" style="color:white">Akun</a><button type="button" class="settings-button" id="open-settings" aria-label="Pengaturan master data" title="Pengaturan">⚙</button><button type="button" class="settings-button hidden" id="logout" aria-label="Keluar" title="Keluar">↪</button></div></header>
+<main id="auth-app" class="hidden"><section class="identity-panel"><h1>Masuk DPARAGON DCIP</h1><form id="login-form"><div class="field"><label for="login-id">ID pengguna</label><input id="login-id" name="username" autocomplete="username" required></div><div class="field"><label for="login-password">Kata sandi</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div><p id="login-error" class="error" role="alert"></p><button class="full">Masuk</button></form></section></main>
+<main id="app" class="hidden"></main>
+<dialog id="settings-dialog" class="modal" aria-labelledby="settings-title"></dialog>
+<dialog id="master-add-dialog" class="modal master-add-dialog" aria-labelledby="master-add-title"></dialog>
+<dialog id="location-dialog" class="modal" aria-labelledby="location-title"></dialog>
+<dialog id="position-record-dialog" class="modal" aria-labelledby="position-record-title"></dialog>
+<script>
+'use strict';
+let divisions=[],props=[];
+const legacyGroups=[{name:'Arsitektur',items:[['floor','Lantai kamar',['Keramik 40 × 40 cm','Keramik 60 × 60 cm','Granite tile','Vinyl']],['wall','Dinding kamar',['Cat dinding','Wallpaper','Wall panel']],['ceiling','Plafon',['Gypsum','PVC','Kalsiboard']]]},{name:'Pintu & Jendela',items:[['door','Pintu kamar',['HPL','Kayu panel','PVC']],['frame','Kusen',['Aluminium','Kayu','UPVC']]]},{name:'MEP',items:[['ac','AC',['½ PK','¾ PK','1 PK']],['lamp','Lampu utama',['LED Downlight','LED Bulb','LED Panel']]]},{name:'Kamar Mandi',items:[['toilet','Kloset',['Duduk','Jongkok']],['shower','Shower',['Hand shower','Wall shower']]]},{name:'Furniture',items:[['bed','Tempat tidur',['Single','Double','Queen']],['wardrobe','Lemari',['HPL','Melamin','Kayu']]]}];
+let positionCodes=['Kamar','Kamar Mandi','Balkon'];let areaPositions=['Diluar Kamar','Didalam Kamar'];let locations=[];
+const roomGroups=[{"name":"Finishing Kamar","items":[["rm_floor","01. Lantai Kamar",["Keramik 40 × 40 cm","Keramik 60 × 60 cm","Homogeneous tile 60 × 60 cm","Vinyl","SPC","Granit alam"]],["rm_ceiling","02. Plafond Kamar",["Gypsum","Kalsiboard","PVC","Multipleks","Beton ekspos"]],["rm_wall_tv","03. Dinding Area TV",["Cat dinding","Wallpaper","Panel HPL","Panel WPC","Panel kayu","Kombinasi cat dan panel"]],["rm_wall_desk","04. Dinding Area Meja & Jendela",["Cat dinding","Wallpaper","Panel HPL","Panel WPC","Panel kayu","Kombinasi cat dan panel"]],["rm_wall_bed","05. Dinding Samping Bed",["Cat dinding","Wallpaper","Panel HPL","Panel WPC","Panel kayu","Kombinasi cat dan panel"]],["rm_wall_head","06. Dinding Area Headbed & Wastafel",["Cat dinding","Wallpaper","Keramik dinding","Panel HPL","Panel WPC","Kombinasi cat dan panel","Kombinasi cat dan keramik"]]]},{"name":"Pintu, Furniture & Interior","items":[["rm_door","07. Pintu Kamar",["Pintu kayu solid","Pintu panel kayu","Pintu multipleks finishing HPL","Pintu engineering wood","Pintu PVC","Pintu aluminium"]],["rm_dipan","08. Dipan",["Kayu solid","Multipleks finishing HPL","Particle board / melamin","Rangka besi","Dipan upholstery"]],["rm_headbed","09. Headbed",["Multipleks finishing HPL","Kayu solid","Panel melamin","Upholstery kain","Upholstery kulit sintetis","Panel WPC"]],["rm_desk","10. Meja Kamar",["Multipleks finishing HPL","Kayu solid","Particle board / melamin","MDF finishing HPL","Rangka besi dengan top kayu"]],["rm_sink","11. Wastafel & Meja Wastafel",["Wastafel keramik + meja granit","Wastafel keramik + meja solid surface","Wastafel keramik + meja HPL","Wastafel keramik + meja marmer","Wastafel keramik + meja keramik","Wastafel gantung tanpa meja"]],["rm_window","12. Kaca Cermin & Bukaan Jendela (Gorden / Rollerblind)",["Kaca cermin + gorden","Kaca cermin + roller blind","Kaca cermin + gorden dan roller blind","Kaca cermin tanpa penutup jendela","Gorden tanpa kaca cermin","Roller blind tanpa kaca cermin"]]]},{"name":"MEP & Elektronik","items":[["rm_lamp","13. Lampu Kamar & Lampu Headbed",["LED downlight + LED strip","LED downlight + lampu dinding","LED bulb + LED strip","LED bulb + lampu dinding","LED panel + LED strip","Lampu kamar tanpa lampu headbed"]],["rm_tv","14. TV",["LED TV 24 inci","LED TV 32 inci","LED TV 40 inci","LED TV 43 inci","Smart TV 32 inci","Smart TV 43 inci","Smart TV 50 inci"]],["rm_ac","15. AC",["AC split ½ PK","AC split ¾ PK","AC split 1 PK","AC split 1½ PK","AC inverter ½ PK","AC inverter 1 PK","AC inverter 1½ PK"]]]}];
+const bathroomGroups=[{"name":"Kamar Mandi","items":[["bm_floor","01. Lantai Kamar Mandi",["Keramik antislip 20 × 20 cm","Keramik antislip 30 × 30 cm","Keramik antislip 40 × 40 cm","Homogeneous tile antislip","Batu alam"]],["bm_wall","02. Dinding Kamar Mandi",["Keramik dinding","Homogeneous tile","Cat tahan lembap","Panel PVC","Kombinasi keramik dan cat"]],["bm_ceiling","03. Plafon Kamar Mandi",["Gypsum tahan lembap","Kalsiboard","PVC","Aluminium","Beton ekspos"]],["bm_door","04. Pintu Kamar Mandi",["Pintu PVC","Pintu UPVC","Pintu aluminium panel","Pintu aluminium kaca","Pintu kaca tempered","Pintu kayu finishing HPL"]],["bm_seal","05. Karet Pintu Kamar Mandi",["Karet EPDM","Karet silikon","Karet PVC","Karet seal bawah pintu","Karet seal keliling pintu"]],["bm_glass","06. Kaca Kamar Mandi / Partisi Kaca",["Kaca bening tempered 8 mm","Kaca bening tempered 10 mm","Kaca tempered buram","Kaca laminated","Kaca berbingkai aluminium"]],["bm_film","07. Stiker Sandblast",["Stiker sandblast polos","Stiker sandblast motif","Stiker sandblast sebagian","Stiker sandblast penuh"]],["bm_light","08. Lampu Kamar Mandi",["LED downlight","LED bulb","LED plafon surface mounted","LED tahan lembap"]],["bm_sanitary","09. Sanitair & Aksesoris (Closet & Tutup Baut Closet, Water Heater)",["Kloset duduk + tutup baut + water heater listrik tangki","Kloset duduk + tutup baut + water heater listrik instan","Kloset duduk + tutup baut tanpa water heater","Kloset duduk tanpa tutup baut + water heater","Kloset duduk tanpa tutup baut dan water heater","Kloset jongkok + water heater","Kloset jongkok tanpa water heater","Water heater saja"]]]}];
+const balconyGroups=[{"name":"Balkon","items":[["bk_floor","01. Lantai Balkon / Void",["Keramik antislip","Homogeneous tile antislip","Beton finishing acian","Batu alam","Decking WPC"]],["bk_wall","02. Dinding Balkon / Void",["Cat eksterior","Acian semen","Keramik dinding","Batu alam","Beton ekspos"]],["bk_door","03. Pintu Balkon / Void",["Pintu aluminium kaca swing","Pintu aluminium kaca sliding","Pintu UPVC kaca","Pintu kaca tempered","Pintu kayu"]],["bk_seal","04. Karet Pintu Balkon / Void",["Karet EPDM","Karet silikon","Karet PVC","Weatherstrip bulu","Karet seal bawah pintu"]],["bk_lock","05. Slot / Kunci Pintu Balkon / Void",["Slot stainless steel","Slot besi","Kunci mortise","Kunci pintu sliding","Grendel aluminium","Kunci silinder"]],["bk_film","06. Stiker Sandblast Balkon / Void",["Stiker sandblast polos","Stiker sandblast motif","Stiker sandblast sebagian","Stiker sandblast penuh"]]]}];
+let groups=legacyGroups,all=groups.flatMap(g=>g.items);const root=document.getElementById('app');let s={page:'home',division:'',property:'',areaPosition:'',room:'',position:'',cat:0,data:{},note:'',history:[]};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const getDivision=()=>divisions.find(d=>d.id===s.division),prop=()=>props.find(p=>p.id===s.property),get=id=>s.data[id]||{},done=id=>{let d=get(id);return !!(d.spec&&(d.spec!=='Lainnya'||d.custom?.trim()));},count=()=>all.filter(i=>done(i[0])).length;
+
+const normalizeMasterValue=v=>String(v??'').normalize('NFKC').trim().replace(/\s+/g,' ').toUpperCase();
+const normalizeLocationName=v=>{const normalized=normalizeMasterValue(v);return /^\d+$/.test(normalized)?normalized.replace(/^0+(?=\d)/,''):normalized;};
+const normalizeRoom=v=>normalizeLocationName(v);
+const locationDisplayName=(room,areaPosition)=>normalizeMasterValue(areaPosition).replace(/\s+/g,'')==='DIDALAMKAMAR'?`Kamar ${room}`:String(room??'');
+const makeKey=(propertyId,room,position)=>JSON.stringify([propertyId,normalizeRoom(room),position]);
+const makeLocationKey=(propertyId,areaPosition,name)=>JSON.stringify([propertyId,normalizeMasterValue(areaPosition),normalizeLocationName(name)]);
+function getAvailableLocations(propertyId,areaPosition){const seen=new Set();return locations.filter(x=>{if(x.propertyId!==propertyId||normalizeMasterValue(x.areaPosition)!==normalizeMasterValue(areaPosition))return false;const key=makeLocationKey(x.propertyId,x.areaPosition,x.name);if(seen.has(key))return false;seen.add(key);return true;});}
+const makeMasterId=kind=>kind+'-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
+const currentKey=()=>makeKey(s.property,s.room,s.position);
+function historyKey(h){const p=h.propertyId||props.find(x=>x.name===h.property)?.id;return p&&h.room&&positionCodes.includes(h.position)?makeKey(p,h.room,h.position):null;}
+let checking=true, storageError='', saving=false, deletingLocation=false, locationDeleteError='', deletingPositionRecord=false, editingRecordKey='', selectedPositionRecord=null, positionNotice='', syncSeq=0, dbPromise,masterDbPromise,settingsNotice='',masterSaving=false,locationSaving=false,managePropertyId='',manageAreaPosition='',manageDivisionId='',managePositionCode='';
+function savedPositionRecords(){if(!s.property||!s.areaPosition||!s.room)return[];const saved=new Map();for(const record of s.history){if((!rmisLive||record.divisionId===s.division)&&positionCodes.includes(record.position)&&isSameLocationRecord(record,s.property,s.areaPosition,s.room))saved.set(record.position,record);}return positionCodes.map(code=>saved.get(code)).filter(Boolean);}
+function availablePositionCodes(){const saved=new Set(savedPositionRecords().map(record=>record.position));return positionCodes.filter(code=>!saved.has(code));}
+function getEditingRecord(){return editingRecordKey?s.history.find(record=>(record.key||historyKey(record))===editingRecordKey):null;}
+const isDuplicate=()=>savedPositionRecords().some(record=>record.position===s.position);
+const canInput=()=>!!getDivision()&&positionCodes.includes(s.position)&&(!rmisLive||rmisOptions(s.position).length>0)&&!checking&&!storageError&&(!!getEditingRecord()||!isDuplicate());
+function openMockDB(){
+  if(!dbPromise)dbPromise=new Promise((resolve,reject)=>{
+    if(!window.indexedDB){reject(new Error('IndexedDB tidak tersedia'));return;}
+    const req=indexedDB.open('dparagon-rmis-mock-v1',1);
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('inspections'))req.result.createObjectStore('inspections',{keyPath:'key'});};
+    req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onblocked=()=>reject(new Error('Penyimpanan lokal sedang terkunci'));
+  }).catch(err=>{dbPromise=null;throw err;});
+  return dbPromise;
+}
+function openMasterDB(){
+  if(!masterDbPromise)masterDbPromise=new Promise((resolve,reject)=>{
+    if(!window.indexedDB){reject(new Error('IndexedDB tidak tersedia'));return;}
+    const req=indexedDB.open('dparagon-rmis-master-v1',1);
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('master'))req.result.createObjectStore('master',{keyPath:'key'});};
+    req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onblocked=()=>reject(new Error('Penyimpanan master data sedang terkunci'));
+  }).catch(err=>{masterDbPromise=null;throw err;});
+  return masterDbPromise;
+}
+async function readMasterData(){const db=await openMasterDB();return new Promise((resolve,reject)=>{const tx=db.transaction('master','readonly');const req=tx.objectStore('master').get('master-data');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+async function writeMasterData(nextProps=props,nextAreas=areaPositions,nextLocations=locations,nextDivisions=divisions,nextCodes=positionCodes){const db=await openMasterDB();return new Promise((resolve,reject)=>{const tx=db.transaction('master','readwrite');tx.objectStore('master').put({key:'master-data',properties:nextProps,areaPositions:nextAreas,locations:nextLocations,divisions:nextDivisions,positionCodes:nextCodes});tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error||new Error('Penyimpanan master data dibatalkan'));tx.onerror=()=>{};});}
+async function loadMasterData(){
+  const data=await readMasterData();if(!data)return;
+  let needsSave=false;
+  if(Array.isArray(data.positionCodes))positionCodes=data.positionCodes;
+  if(Array.isArray(data.areaPositions))areaPositions=data.areaPositions;
+  if(Array.isArray(data.properties)){
+    const original=data.properties;props=original.map(p=>({...p,name:String(p.name??'').toLocaleUpperCase('id-ID')}));
+    needsSave=original.some((p,i)=>String(p.name??'')!==props[i].name);
+  }
+  if(Array.isArray(data.divisions)){
+    const original=data.divisions;divisions=original.map(d=>({...d,name:String(d.name??'').toLocaleUpperCase('id-ID')}));
+    needsSave=needsSave||original.some((d,i)=>String(d.name??'')!==divisions[i].name);
+  }
+  if(Array.isArray(data.locations)){
+    const original=data.locations;locations=original.map(x=>{const name=String(x.name??'').toLocaleUpperCase('id-ID');return {...x,name,key:makeLocationKey(x.propertyId,x.areaPosition,name)};});
+    needsSave=needsSave||original.some((x,i)=>String(x.name??'')!==locations[i].name||x.key!==locations[i].key);
+  }
+  if(needsSave)await writeMasterData(props,areaPositions,locations,divisions);
+}
+async function readMockRecords(){const db=await openMockDB();return new Promise((resolve,reject)=>{const tx=db.transaction('inspections','readonly');const req=tx.objectStore('inspections').getAll();req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+async function addMockRecord(record){const db=await openMockDB();return new Promise((resolve,reject)=>{const tx=db.transaction('inspections','readwrite');tx.objectStore('inspections').add(record);tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error||new Error('Penyimpanan dibatalkan'));tx.onerror=()=>{};});}
+async function putMockRecord(record){const db=await openMockDB();return new Promise((resolve,reject)=>{const tx=db.transaction('inspections','readwrite');tx.objectStore('inspections').put(record);tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error||new Error('Perubahan tidak tersimpan'));tx.onerror=()=>{};});}
+async function deleteMockRecord(key){const db=await openMockDB();return new Promise((resolve,reject)=>{const tx=db.transaction('inspections','readwrite');tx.objectStore('inspections').delete(key);tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error||new Error('Penghapusan dibatalkan'));tx.onerror=()=>{};});}
+function isSameLocationRecord(record,propertyId,areaPosition,room){const recordPropertyId=record.propertyId||props.find(p=>normalizeMasterValue(p.name)===normalizeMasterValue(record.property))?.id;if(recordPropertyId!==propertyId||!record.room||normalizeLocationName(record.room)!==normalizeLocationName(room))return false;if(record.areaPosition)return normalizeMasterValue(record.areaPosition)===normalizeMasterValue(areaPosition);const matchingAreas=new Set(locations.filter(x=>x.propertyId===propertyId&&normalizeLocationName(x.name)===normalizeLocationName(room)).map(x=>normalizeMasterValue(x.areaPosition)));return matchingAreas.size===1&&matchingAreas.has(normalizeMasterValue(areaPosition));}
+async function deleteMockRecordsForLocation(propertyId,areaPosition,room){const db=await openMockDB();return new Promise((resolve,reject)=>{const tx=db.transaction('inspections','readwrite'),store=tx.objectStore('inspections');let removed=[];const req=store.getAll();req.onsuccess=()=>{removed=req.result.filter(record=>isSameLocationRecord(record,propertyId,areaPosition,room));for(const record of removed)store.delete(record.key);};req.onerror=()=>{try{tx.abort();}catch{};};tx.oncomplete=()=>resolve(removed);tx.onabort=()=>reject(tx.error||req.error||new Error('Penghapusan data checklist dibatalkan'));tx.onerror=()=>{};});}
+function mergeHistory(records){const merged=new Map();for(const h of [...s.history,...records]){const k=historyKey(h)||JSON.stringify([h.property,h.room,h.position,h.time]);merged.set(k,h);}s.history=[...merged.values()];}
+async function syncHistory(migrate=false){
+  const seq=++syncSeq;checking=true;storageError='';render();
+  try{
+    if(migrate){for(const h of s.history.slice()){const key=historyKey(h);if(!key)continue;try{await addMockRecord({...h,key,propertyId:JSON.parse(key)[0]});}catch(err){if(err?.name!=='ConstraintError')throw err;}}}
+    const records=await readMockRecords();if(seq!==syncSeq)return;mergeHistory(records);
+  }catch(err){if(seq!==syncSeq)return;storageError='Penyimpanan lokal tidak tersedia. Pendataan tidak dapat disimpan dengan aman.';}
+  finally{if(seq===syncSeq){checking=false;render();}}
+}
+function positionStatus(){if(storageError)return '<p class="error" role="alert">'+esc(storageError)+'</p><button class="secondary full" data-act="retry">Coba lagi</button>';if(checking)return '<p class="muted" role="status">Memeriksa data sebelumnya...</p>';if(!positionCodes.length)return '<p class="muted">Belum ada Kode Posisi. Tambahkan melalui Pengaturan.</p>';if(editingRecordKey)return '<p class="muted small">Mode edit: perubahan akan memperbarui pendataan yang tersimpan.</p>';if(!availablePositionCodes().length)return '<p class="good small">Semua kode posisi sudah terdata. Ketuk kapsul untuk mengedit atau menghapus.</p>';if(!positionCodes.includes(s.position)||!availablePositionCodes().includes(s.position))return '<p class="muted">Pilih kode posisi yang belum terdata dari dropdown.</p>';return '<p class="good small">Kode posisi belum didata. Silakan lanjutkan.</p>';}
+async function saveOnce(b){
+  if(saving||s.page!=='check'||!canInput()||count()!==all.length)return;
+  saving=true;b.disabled=true;b.textContent='Menyimpan...';
+  const wasEditing=!!editingRecordKey,record={key:wasEditing?editingRecordKey:currentKey(),divisionId:s.division,division:getDivision().name,propertyId:s.property,property:prop().name,areaPosition:s.areaPosition,room:s.room,position:s.position,time:new Date().toLocaleString('id-ID'),data:JSON.parse(JSON.stringify(Object.fromEntries(all.filter(([id])=>done(id)).map(([id])=>[id,{spec:get(id).spec,...(get(id).spec==='Lainnya'?{custom:get(id).custom.trim()}:{})}])))),note:s.note};
+  try{if(wasEditing)await putMockRecord(record);else await addMockRecord(record);mergeHistory([record]);editingRecordKey='';s.data={};s.note='';s.cat=0;s.position=availablePositionCodes()[0]||'';positionNotice=`Kode posisi ${record.position} berhasil ${wasEditing?'diperbarui':'disimpan'}.`;saving=false;go('check');}
+  catch(err){saving=false;if(err?.name==='ConstraintError'){await syncHistory();editingRecordKey='';s.data={};s.note='';s.cat=0;s.position=availablePositionCodes()[0]||'';positionNotice='Kode posisi ini sudah tersimpan. Pilih kapsulnya untuk mengedit data.';go('check');}else{storageError='Data belum tersimpan. Muat ulang riwayat dan coba lagi.';render();}}
+}
+async function deleteCurrentLocation(){
+  if(deletingLocation||checking||s.page!=='check'||!prop()||!s.room||!s.areaPosition)return;
+  const propertyId=s.property,propertyName=prop().name,areaPosition=s.areaPosition,room=s.room;
+  if(!confirm(`Hapus lokasi "${room}" dari properti "${propertyName}" pada Area "${areaPosition}" beserta seluruh data checklist yang tersimpan untuk lokasi ini?`))return;
+  ++syncSeq;checking=false;deletingLocation=true;locationDeleteError='';render();
+  let removedRecords=[];
+  try{
+    removedRecords=await deleteMockRecordsForLocation(propertyId,areaPosition,room);
+    const locationKey=makeLocationKey(propertyId,areaPosition,room),nextLocations=locations.filter(x=>makeLocationKey(x.propertyId,x.areaPosition,x.name)!==locationKey);
+    await writeMasterData(props,areaPositions,nextLocations);
+    s.history=s.history.filter(record=>!isSameLocationRecord(record,propertyId,areaPosition,room));locations=nextLocations;
+    s.areaPosition='';s.room='';s.position='';s.data={};s.note='';s.cat=0;editingRecordKey='';positionNotice='';s.page='home';
+  }catch(err){
+    let restored=true;
+    for(const record of removedRecords){try{await addMockRecord(record);}catch{restored=false;}}
+    locationDeleteError=restored?'Gagal menghapus lokasi. Data checklist dan master data tetap tersedia.':'Penghapusan gagal dan sebagian data checklist mungkin perlu dimuat ulang.';
+    await syncHistory();
+  }finally{deletingLocation=false;render();}
+}
+
+function options(arr,val,placeholder){return `<option value="">${esc(placeholder)}</option>`+arr.map(([k,v])=>`<option value="${esc(k)}" ${k===val?'selected':''}>${esc(v)}</option>`).join('')}
+function itemHeading(name){const match=String(name).match(/^(\d{2})\.\s*(.*)$/);return `${match?`<span class="item-number">${match[1]}</span>`:''}<span class="item-name">${esc((match?match[2]:String(name)).toUpperCase())}</span>`}
+function go(page){s.page=page;render();window.scrollTo(0,0);document.getElementById('page-title')?.focus({preventScroll:true})}
+function title(t){return `<h1 id="page-title" tabindex="-1">${esc(t)}</h1>`}
+function renderSettingsDialog(notice=settingsNotice){
+  const dialog=document.getElementById('settings-dialog');
+  const selectedDivision=divisions.find(d=>d.id===manageDivisionId),selectedProperty=props.find(p=>p.id===managePropertyId),selectedPosition=areaPositions.find(p=>p===manageAreaPosition),selectedPositionCode=positionCodes.find(p=>p===managePositionCode);
+  dialog.innerHTML=`<div class="modal-body"><div class="modal-header"><div><h2 id="settings-title">Pengaturan Master Data</h2><p class="muted small">Daftar tersimpan di Google Sheets.</p></div><button type="button" class="secondary modal-close" data-close-dialog aria-label="Tutup pengaturan">×</button></div>${notice?`<p class="modal-notice ${notice.startsWith('Gagal')?'error':''}" role="status">${esc(notice)}</p>`:''}<section class="settings-section"><h3>Divisi</h3><div class="master-picker"><div class="field"><label for="manage-division">Pilih divisi</label><select id="manage-division" ${divisions.length?'':'disabled'}><option value="" disabled ${manageDivisionId?'':'selected'} hidden>${divisions.length?'Pilih divisi':'Belum ada divisi'}</option>${divisions.map(d=>`<option value="${esc(d.id)}" ${d.id===manageDivisionId?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div><button type="button" class="secondary plus-button" data-open-add="division" aria-label="Tambah divisi" title="Tambah divisi" ${masterSaving?'disabled':''}>+</button></div>${selectedDivision?`<button type="button" class="master-delete" data-delete-master="division" ${masterSaving?'disabled':''}><svg class="delete-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14m-6 4v6m4-6v6"/></svg>Hapus divisi terpilih</button>`:''}</section><section class="settings-section"><h3>Properti</h3><div class="master-picker"><div class="field"><label for="manage-property">Pilih properti</label><select id="manage-property" ${props.length?'':'disabled'}><option value="" disabled ${managePropertyId?'':'selected'} hidden>${props.length?'Pilih properti':'Belum ada properti'}</option>${props.map(p=>`<option value="${esc(p.id)}" ${p.id===managePropertyId?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div><button type="button" class="secondary plus-button" data-open-add="property" aria-label="Tambah properti" title="Tambah properti" ${masterSaving?'disabled':''}>+</button></div>${selectedProperty?`<button type="button" class="master-delete" data-delete-master="property" ${masterSaving?'disabled':''}><svg class="delete-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14m-6 4v6m4-6v6"/></svg>Hapus properti terpilih</button>`:''}</section><section class="settings-section"><h3>Area</h3><div class="master-picker"><div class="field"><label for="manage-position">Pilih area</label><select id="manage-position" ${areaPositions.length?'':'disabled'}><option value="" disabled ${manageAreaPosition?'':'selected'} hidden>${areaPositions.length?'Pilih area':'Belum ada area'}</option>${areaPositions.map(p=>`<option value="${esc(p)}" ${p===manageAreaPosition?'selected':''}>${esc(p)}</option>`).join('')}</select></div><button type="button" class="secondary plus-button" data-open-add="position" aria-label="Tambah area" title="Tambah area" ${masterSaving?'disabled':''}>+</button></div>${selectedPosition?`<button type="button" class="master-delete" data-delete-master="position" ${masterSaving?'disabled':''}><svg class="delete-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14m-6 4v6m4-6v6"/></svg>Hapus area terpilih</button>`:''}</section><section class="settings-section"><h3>Kode Posisi</h3><div class="master-picker"><div class="field"><label for="manage-position-code">Pilih kode posisi</label><select id="manage-position-code" ${positionCodes.length?'':'disabled'}><option value="" disabled ${managePositionCode?'':'selected'} hidden>${positionCodes.length?'Pilih kode posisi':'Belum ada kode posisi'}</option>${positionCodes.map(p=>`<option value="${esc(p)}" ${p===managePositionCode?'selected':''}>${esc(p)}</option>`).join('')}</select></div><button type="button" class="secondary plus-button" data-open-add="position-code" aria-label="Tambah kode posisi" title="Tambah kode posisi" ${masterSaving?'disabled':''}>+</button></div>${selectedPositionCode?`<button type="button" class="master-delete" data-delete-master="position-code" ${masterSaving?'disabled':''}><svg class="delete-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14m-6 4v6m4-6v6"/></svg>Hapus kode posisi terpilih</button>`:''}</section><p class="storage-note"></p></div>`;
+}
+function renderMasterAddDialog(kind,notice=''){
+  const dialog=document.getElementById('master-add-dialog'),isProperty=kind==='property',isDivision=kind==='division',isPositionCode=kind==='position-code',isUppercase=isProperty||isDivision;
+  const typeName=isDivision?'divisi':isProperty?'properti':isPositionCode?'kode posisi':'area',title=isPositionCode?'Tambah Kode Posisi':`Tambah ${typeName[0].toLocaleUpperCase('id-ID')}${typeName.slice(1)}`,label=`Nama ${typeName}`,placeholder=isDivision?'Contoh: OPERASIONAL':isProperty?"Contoh: D'PARAGON SUDIRMAN":isPositionCode?'Contoh: Kamar':'Contoh: Parkiran';
+  dialog.innerHTML=`<form class="modal-body" id="add-master-form" data-add-master="${kind}"><div class="modal-header"><div><h2 id="master-add-title">${title}</h2><p class="muted small">Masukkan ${label} baru.</p></div><button type="button" class="secondary modal-close" data-close-dialog aria-label="Tutup">×</button></div>${notice?`<p class="modal-notice error" role="alert">${esc(notice)}</p>`:''}<div class="field"><label for="new-master-value">${label}</label><input id="new-master-value" class="${isUppercase?'uppercase-input':''}" name="value" maxlength="80" autocomplete="off" placeholder="${esc(placeholder)}" required></div><div class="modal-actions"><button type="button" class="secondary" data-close-dialog>Batal</button><button type="submit">Simpan</button></div></form>`;
+}
+function renderLocationDialog(notice=''){const dialog=document.getElementById('location-dialog');dialog.innerHTML=`<form class="modal-body" id="add-location-form"><div class="modal-header"><div><h2 id="location-title">Tambah Nama / Nomor Lokasi</h2><p class="muted small">${esc(prop()?.name||'')} · Area ${esc(s.areaPosition)}</p></div><button type="button" class="secondary modal-close" data-close-dialog aria-label="Tutup">×</button></div>${notice?`<p class="modal-notice error" role="alert">${esc(notice)}</p>`:''}<div class="field"><label for="new-location">Nama / Nomor Lokasi</label><input id="new-location" class="uppercase-input" name="value" maxlength="80" autocomplete="off" placeholder="Contoh: 101 atau Parkiran Utara" required></div><div class="modal-actions"><button type="button" class="secondary" data-close-dialog>Batal</button><button type="submit">Tambah Lokasi</button></div></form>`;}
+function openSettingsDialog(){settingsNotice='';manageDivisionId=divisions.some(d=>d.id===s.division)?s.division:(divisions.some(d=>d.id===manageDivisionId)?manageDivisionId:(divisions[0]?.id||''));managePropertyId=props.some(p=>p.id===s.property)?s.property:(props.some(p=>p.id===managePropertyId)?managePropertyId:(props[0]?.id||''));manageAreaPosition=areaPositions.includes(s.areaPosition)?s.areaPosition:(areaPositions.includes(manageAreaPosition)?manageAreaPosition:(areaPositions[0]||''));managePositionCode=positionCodes.includes(s.position)?s.position:(positionCodes.includes(managePositionCode)?managePositionCode:(positionCodes[0]||''));renderSettingsDialog();document.getElementById('settings-dialog').showModal();}
+function openMasterAddDialog(kind){renderMasterAddDialog(kind);const dialog=document.getElementById('master-add-dialog');dialog.showModal();dialog.querySelector('#new-master-value').focus();}
+function openLocationDialog(){renderLocationDialog();const dialog=document.getElementById('location-dialog');dialog.showModal();dialog.querySelector('#new-location').focus();}
+function renderPositionRecordDialog(record=selectedPositionRecord,notice=''){
+  if(!record)return;const dialog=document.getElementById('position-record-dialog'),display=locationDisplayName(record.room,record.areaPosition);
+  dialog.innerHTML=`<div class="modal-body"><div class="modal-header"><div><h2 id="position-record-title">${esc(record.position)} sudah terdata</h2><p class="muted small">${esc(display)} · ${esc(record.property||prop()?.name||'')}</p></div><button type="button" class="secondary modal-close" data-close-dialog aria-label="Tutup">×</button></div>${notice?`<p class="modal-notice error" role="alert">${esc(notice)}</p>`:''}<p class="muted">Data ini sudah direview dan disimpan. Anda dapat menyesuaikan checklist atau menghapus pendataan ini.</p><div class="modal-actions position-record-dialog-actions"><button type="button" class="secondary" data-position-action="edit" ${deletingPositionRecord?'disabled':''}>Edit Pendataan</button><button type="button" class="danger-button" data-position-action="delete" ${deletingPositionRecord?'disabled':''}>${deletingPositionRecord?'Menghapus...':'Hapus Data'}</button></div></div>`;
+}
+function openPositionRecordDialog(position){selectedPositionRecord=savedPositionRecords().find(record=>record.position===position)||null;if(!selectedPositionRecord)return;renderPositionRecordDialog();document.getElementById('position-record-dialog').showModal();}
+function savedPositionPanel(){const records=savedPositionRecords();return `<div class="saved-positions"><p class="saved-positions-label"><strong>SUDAH TERDATA</strong></p><p class="muted saved-positions-help">${records.length?'Pilih kapsul di bawah untuk mengedit atau menghapus pendataan.':'Kode yang sudah direview dan disimpan akan muncul di sini.'}</p>${records.length?`<div class="position-chip-list">${records.map(record=>`<button type="button" class="position-chip" data-act="saved-position" data-position="${esc(record.position)}" aria-haspopup="dialog" ${checking||saving||deletingLocation||deletingPositionRecord?'disabled':''}>${esc(record.position)}</button>`).join('')}</div>`:'<p class="muted small">Belum ada pendataan tersimpan.</p>'}</div>`;}
+function positionSelector(){if(editingRecordKey)return `<div class="field"><label>Kode Posisi</label><div class="edit-position-display">${esc(s.position)} <span class="muted small" style="margin-left:auto">Sedang diedit</span></div></div>`;const available=availablePositionCodes();if(!available.length)return '';return `<div class="field"><label for="position">Kode Posisi</label><select id="position" required ${checking||storageError?'disabled':''}>${available.map(code=>`<option value="${esc(code)}" ${code===s.position?'selected':''}>${esc(code)}</option>`).join('')}</select></div>`;}
+function progress(){return `<div class="check-progress"><div class="between small" aria-live="polite"><span id="progress-label">${count()} dari ${all.length} komponen terisi</span><span id="percent">${Math.round(count()/all.length*100)}%</span></div><div class="progress" role="progressbar" aria-label="Kelengkapan checklist" aria-valuemin="0" aria-valuemax="${all.length}" aria-valuenow="${count()}"><span style="width:${count()/all.length*100}%"></span></div></div>`}
+function updateProgress(){const n=count();document.getElementById('progress-label').textContent=`${n} dari ${all.length} komponen terisi`;document.getElementById('percent').textContent=`${Math.round(n/all.length*100)}%`;const bar=root.querySelector('.progress');bar.setAttribute('aria-valuenow',n);bar.firstElementChild.style.width=`${n/all.length*100}%`;const save=root.querySelector('[data-act="save"]');if(save)save.disabled=!all.length||n!==all.length||!canInput()||saving;const hint=root.querySelector('#save-completion-hint');if(hint)hint.hidden=n===all.length;}
+function render(){for(const d of Object.values(s.data)){if(d.spec==='Tidak berlaku'||d.spec==='Tidak tersedia')d.spec='';}if(s.page==='check'&&!editingRecordKey){const available=availablePositionCodes();if(available.length&&!available.includes(s.position))s.position=available[0];}groups=rmisLive?rmisGroups(s.position):(({Kamar:roomGroups,'Kamar Mandi':bathroomGroups,Balkon:balconyGroups})[s.position]||legacyGroups);all=groups.flatMap(g=>g.items);s.cat=Math.max(0,Math.min(Number(s.cat)||0,groups.length-1));let html='';
+if(s.page==='home'){
+  const availableLocations=getAvailableLocations(s.property,s.areaPosition);
+  html+=title('Pendataan Lokasi')+`<p class="muted">Pilih divisi, properti, area, dan nama atau nomor lokasi.</p><section class="identity-panel"><div class="field"><label for="division">Divisi</label><select id="division" required><option value="" disabled ${s.division?'':'selected'} hidden>Pilih divisi</option>${divisions.map(d=>`<option value="${esc(d.id)}" ${d.id===s.division?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div><div class="field"><label for="property">Properti</label><select id="property" required><option value="" disabled ${s.property?'':'selected'} hidden>Pilih properti</option>${props.map(p=>`<option value="${esc(p.id)}" ${p.id===s.property?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div><div class="field"><label for="area-position">Area</label><select id="area-position" required><option value="" disabled ${s.areaPosition?'':'selected'} hidden>Pilih area</option>${areaPositions.map(x=>`<option value="${esc(x)}" ${x===s.areaPosition?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="field"><label for="room">Nama / Nomor Lokasi</label><div class="location-control"><select id="room" required ${!prop()||!s.areaPosition||!availableLocations.length?'disabled':''}><option value="" disabled ${s.room?'':'selected'} hidden>${!prop()||!s.areaPosition?'Pilih properti dan area':availableLocations.length?'Pilih nama / nomor lokasi':'Belum ada lokasi; tekan + untuk menambahkan'}</option>${availableLocations.map(x=>`<option value="${esc(x.name)}" ${x.name===s.room?'selected':''}>${esc(x.name)}</option>`).join('')}</select><button type="button" class="secondary plus-button" data-act="add-location" aria-label="Tambah nama atau nomor lokasi" title="Tambah lokasi" ${!prop()||!s.areaPosition?'disabled':''}>+</button></div></div>${positionCodes.length?'':'<p class="error small" role="alert">Tambahkan Kode Posisi melalui Pengaturan sebelum memulai.</p>'}<button class="full" data-act="start" ${!getDivision()||!prop()||!s.areaPosition||!s.room.trim()||!positionCodes.length?'disabled':''}>Mulai pendataan</button></section><div class="actions"><button class="secondary" data-act="history">Riwayat pendataan</button></div>`;
+}if(s.page==='check'){
+  const positionField=positionSelector();
+  html+=`<div class="actions check-top-actions"><button class="secondary" data-act="back">← Kembali</button><button class="danger-button" data-act="delete-location" aria-label="Hapus lokasi beserta checklist tersimpan" ${checking||deletingLocation?'disabled':''}>${deletingLocation?'Menghapus...':'Hapus'}</button></div><section class="identity-panel check-identity-panel"><div class="check-location-header">`+title(locationDisplayName(s.room,s.areaPosition).toLocaleUpperCase('id-ID'))+`<p class="muted">Divisi ${esc(getDivision()?.name||"")} · ${esc(prop().name)} · Area ${esc(s.areaPosition)}</p></div>${locationDeleteError?`<p class="error" role="alert">${esc(locationDeleteError)}</p>`:''}${savedPositionPanel()}</section>${positionNotice?`<p class="good small" role="status">${esc(positionNotice)}</p>`:''}${positionStatus()}`;
+  if(canInput()){
+     html+=progress()+`<section class="checklist-panel" aria-label="Checklist material">`+(positionField?`<div class="checklist-position-picker">${positionField}</div>`:'')+groups.map((g,i)=>`<section id="group-${i}" class="checklist-group">${s.position==="Fasum"?`<h2>${esc(g.name)}</h2>`:""}${g.items.map(([id,name,opts])=>item(id,name,opts)).join('')}</section>`).join('')+`</section>${count()!==all.length?'<p class="muted small" id="save-completion-hint">Lengkapi seluruh komponen untuk mengaktifkan tombol Simpan.</p>':''}<button class="full" data-act="save" ${count()!==all.length||!canInput()||saving?'disabled':''}>Simpan</button>`;
+  }else if(!checking&&!storageError&&!editingRecordKey&&!availablePositionCodes().length){
+     html+=`<button class="full" data-act="another">Data lokasi berikutnya</button>`;
+  }else{
+     html+='';
+  }
+}
+if(s.page==='success'){html+=`<div class="success"><div class="check" aria-hidden="true">✓</div>${title('Simulasi selesai')}<p>Divisi ${esc(getDivision()?.name||"")} · ${esc(prop().name)} · Area ${esc(s.areaPosition)} · ${esc(locationDisplayName(s.room,s.areaPosition))} &middot; ${esc(s.position||'Kode posisi belum dipilih')}</p><p class="muted">Data simulasi tersimpan di browser ini. Belum tersimpan ke Google Sheets.</p></div><button class="full" data-act="another">Data lokasi berikutnya</button><div class="actions"><button class="secondary" data-act="history">Lihat riwayat</button></div>`;}
+if(s.page==='history'){html+=title('Riwayat Pendataan')+`<p class="muted">Riwayat pendataan tersimpan di browser ini.</p>`+(s.history.length?s.history.map(h=>`<div class="review-row"><strong>${esc(locationDisplayName(h.room,h.areaPosition))}</strong><div class="muted">${h.division?`${esc(h.division)} · `:""}${esc(h.property)} &middot; ${esc(h.areaPosition||'Area belum dicatat')} &middot; ${esc(h.position||'Kode posisi belum dicatat')} &middot; ${esc(h.time)}</div><span class="good small">Simulasi selesai</span></div>`).join(''):'<p>Belum ada pendataan.</p>')+`<div class="actions"><button data-act="home">Pendataan lokasi</button></div>`;}
+root.innerHTML=html;}
+function item(id,name,opts){let d=get(id);return `<section class="item" id="item-${id}"><h3 class="item-title-row">${itemHeading(name)} <span class="good item-check" id="mark-${id}">${done(id)?'✓':''}</span></h3><div class="field"><label for="spec-${id}">Spesifikasi material</label><select id="spec-${id}" data-spec="${id}" class="${d.spec?'material-selected':''}">${options([...opts,'Lainnya','Tidak Ada','Belum diketahui'].map(x=>[x,x]),d.spec,'Pilih spesifikasi')}</select></div><div class="field ${d.spec==='Lainnya'?'':'hidden'}" id="custom-wrap-${id}"><label for="custom-${id}">Spesifikasi lainnya <span class="muted">(wajib diisi)</span></label><input id="custom-${id}" data-custom="${id}" value="${esc(d.custom||'')}" autocomplete="off" aria-required="${d.spec==='Lainnya'}" ${d.spec==='Lainnya'?'required':''}><p class="muted small" id="custom-help-${id}">Isi spesifikasi material yang belum tercantum.</p></div></section>`}
+function updateItem(id){let d=get(id);document.getElementById('spec-'+id).classList.toggle('material-selected',!!d.spec);document.getElementById('custom-wrap-'+id).classList.toggle('hidden',d.spec!=='Lainnya');const custom=document.getElementById('custom-'+id),required=d.spec==='Lainnya';custom.required=required;custom.setAttribute('aria-required',String(required));document.getElementById('mark-'+id).textContent=done(id)?'✓':'';updateProgress();}
+const settingsDialog=document.getElementById('settings-dialog'),masterAddDialog=document.getElementById('master-add-dialog'),locationDialog=document.getElementById('location-dialog'),positionRecordDialog=document.getElementById('position-record-dialog');
+document.getElementById('open-settings').addEventListener('click',openSettingsDialog);
+for(const dialog of [settingsDialog,masterAddDialog,locationDialog,positionRecordDialog])dialog.addEventListener('click',e=>{if(e.target===dialog||e.target.closest('[data-close-dialog]'))dialog.close();});
+positionRecordDialog.addEventListener('click',async e=>{
+  const action=e.target.closest('[data-position-action]')?.dataset.positionAction,record=selectedPositionRecord;if(!action||!record||deletingPositionRecord)return;
+  const key=record.key||historyKey(record);if(!key)return;
+  if(action==='edit'){
+    if(Object.keys(s.data).length&&!confirm('Membuka pendataan tersimpan akan membuang checklist yang sedang Anda isi dan belum disimpan. Lanjutkan?'))return;
+    editingRecordKey=key;s.position=record.position;s.data=JSON.parse(JSON.stringify(record.data||{}));s.note=record.note||'';s.cat=0;positionNotice='';selectedPositionRecord=null;positionRecordDialog.close();s.page='check';render();window.scrollTo(0,0);return;
+  }
+  if(action==='delete'){
+    const display=locationDisplayName(record.room,record.areaPosition);if(!confirm(`Hapus pendataan Kode Posisi "${record.position}" untuk lokasi "${display}"? Kode ini akan tersedia kembali di dropdown.`))return;
+    deletingPositionRecord=true;renderPositionRecordDialog(record);let error='';
+    try{
+      await deleteMockRecord(key);s.history=s.history.filter(item=>(item.key||historyKey(item))!==key);
+      if(editingRecordKey===key){editingRecordKey='';s.data={};s.note='';s.cat=0;}
+      const available=availablePositionCodes();if(s.page==='check'&&!available.includes(s.position))s.position=available.includes(record.position)?record.position:(available[0]||'');
+      positionNotice=`Pendataan ${record.position} dihapus. Kode posisi tersedia kembali.`;selectedPositionRecord=null;positionRecordDialog.close();render();
+    }catch(err){error='Gagal menghapus pendataan. Data tersimpan belum berubah.';}
+    finally{deletingPositionRecord=false;if(error){selectedPositionRecord=record;renderPositionRecordDialog(record,error);}}
+  }
+});
+settingsDialog.addEventListener('change',e=>{if(e.target.id==='manage-division')manageDivisionId=e.target.value;if(e.target.id==='manage-property')managePropertyId=e.target.value;if(e.target.id==='manage-position')manageAreaPosition=e.target.value;if(e.target.id==='manage-position-code')managePositionCode=e.target.value;});
+masterAddDialog.addEventListener('input',e=>{
+  const form=e.target.closest('form[data-add-master]'),input=e.target;
+  if(!form||!['property','division'].includes(form.dataset.addMaster)||input.name!=='value')return;
+  const start=input.selectionStart,end=input.selectionEnd,upper=input.value.toLocaleUpperCase('id-ID');
+  if(upper!==input.value){input.value=upper;input.setSelectionRange(start,end);}
+});
+settingsDialog.addEventListener('click',async e=>{
+  const add=e.target.closest('[data-open-add]');if(add){openMasterAddDialog(add.dataset.openAdd);return;}
+  const remove=e.target.closest('[data-delete-master]');if(!remove||masterSaving)return;
+  const kind=remove.dataset.deleteMaster;
+  if(kind==='division'){
+    const id=document.getElementById('manage-division')?.value,target=divisions.find(d=>d.id===id);if(!target)return;
+    if(!confirm(`Hapus divisi "${target.name}"? Riwayat pendataan yang sudah tersimpan tetap ada.`))return;
+    masterSaving=true;renderSettingsDialog();
+    try{
+      const next=divisions.filter(d=>d.id!==id);await writeMasterData(props,areaPositions,locations,next);divisions=next;manageDivisionId=next[0]?.id||'';
+      if(s.division===id){s.division='';if(s.page!=='home'){s.page='home';s.position='';s.data={};s.note='';s.cat=0;editingRecordKey='';positionNotice='';}}
+      settingsNotice='Divisi berhasil dihapus. Riwayat pendataan tetap tersimpan.';render();
+    }catch(err){settingsNotice=err?.message || 'Gagal menghapus master data.';}
+    finally{masterSaving=false;renderSettingsDialog();}
+    return;
+  }
+  if(kind==='position'){
+    const position=document.getElementById('manage-position')?.value;if(!position)return;
+    const linkedCount=locations.filter(x=>normalizeMasterValue(x.areaPosition)===normalizeMasterValue(position)).length,impact=linkedCount?` ${linkedCount} lokasi terkait juga akan dihapus.`:'';
+    if(!confirm(`Hapus area "${position}"?${impact} Riwayat pendataan yang sudah tersimpan tetap ada.`))return;
+    masterSaving=true;renderSettingsDialog();
+    try{
+      const nextPositions=areaPositions.filter(p=>p!==position),nextLocations=locations.filter(x=>normalizeMasterValue(x.areaPosition)!==normalizeMasterValue(position));
+      await writeMasterData(props,nextPositions,nextLocations);areaPositions=nextPositions;locations=nextLocations;manageAreaPosition=nextPositions[0]||'';
+      if(normalizeMasterValue(s.areaPosition)===normalizeMasterValue(position)){s.areaPosition='';s.room='';s.position='';s.data={};s.note='';s.cat=0;editingRecordKey='';positionNotice='';if(s.page!=='home')s.page='home';}
+      settingsNotice=`Area ${position} dan lokasi terkait berhasil dihapus. Riwayat tetap tersimpan.`;render();
+    }catch(err){settingsNotice=err?.message || 'Gagal menghapus master data.';}
+    finally{masterSaving=false;renderSettingsDialog();}
+    return;
+  }
+  if(kind==='position-code'){
+    const code=document.getElementById('manage-position-code')?.value;if(!code)return;
+    const active=s.position===code,impact=active&&Object.keys(s.data).length?' Checklist yang sedang diisi untuk kode ini akan dikosongkan.':'';
+    if(!confirm(`Hapus Kode Posisi "${code}"?${impact} Riwayat pendataan yang sudah tersimpan tetap ada.`))return;
+    masterSaving=true;renderSettingsDialog();
+    try{
+      const nextCodes=positionCodes.filter(p=>p!==code);await writeMasterData(props,areaPositions,locations,divisions,nextCodes);positionCodes=nextCodes;managePositionCode=nextCodes[0]||'';
+      if(active){s.page='home';s.position='';s.data={};s.note='';s.cat=0;editingRecordKey='';positionNotice='';}
+      settingsNotice=`Kode Posisi ${code} berhasil dihapus. Riwayat pendataan tetap tersimpan.`;render();
+    }catch(err){settingsNotice=err?.message || 'Gagal menghapus master data.';}
+    finally{masterSaving=false;renderSettingsDialog();}
+    return;
+  }
+  if(kind==='property'){
+    const id=document.getElementById('manage-property')?.value,target=props.find(p=>p.id===id);if(!target)return;
+    const linkedCount=locations.filter(x=>x.propertyId===id).length,impact=linkedCount?` ${linkedCount} nama/nomor lokasi terkait juga akan dihapus.`:'';
+    if(!confirm(`Hapus properti "${target.name}"?${impact} Riwayat pendataan yang sudah tersimpan tetap ada.`))return;
+    masterSaving=true;renderSettingsDialog();
+    try{
+      const nextProps=props.filter(p=>p.id!==id),nextLocations=locations.filter(x=>x.propertyId!==id);
+      await writeMasterData(nextProps,areaPositions,nextLocations);props=nextProps;locations=nextLocations;
+      if(s.property===id){s.page='home';s.property='';s.areaPosition='';s.room='';s.position='';s.data={};s.note='';s.cat=0;editingRecordKey='';positionNotice='';}
+      managePropertyId=nextProps[0]?.id||'';settingsNotice='Properti dan lokasi terkait berhasil dihapus.';render();
+    }catch(err){settingsNotice=err?.message || 'Gagal menghapus master data.';}
+    finally{masterSaving=false;renderSettingsDialog();}
+  }
+});
+masterAddDialog.addEventListener('submit',async e=>{
+  const form=e.target.closest('form[data-add-master]');if(!form)return;e.preventDefault();if(masterSaving)return;
+  const input=form.elements.value,kind=form.dataset.addMaster,raw=String(input.value||'').trim(),value=['property','division'].includes(kind)?raw.toLocaleUpperCase('id-ID'):raw,normalized=normalizeMasterValue(value);if(!normalized)return;
+  const duplicate=kind==='property'?props.some(p=>normalizeMasterValue(p.name)===normalized):kind==='division'?divisions.some(d=>normalizeMasterValue(d.name)===normalized):kind==='position-code'?positionCodes.some(p=>normalizeMasterValue(p)===normalized):areaPositions.some(p=>normalizeMasterValue(p)===normalized);
+  if(duplicate){renderMasterAddDialog(kind,kind==='property'?'Nama properti sudah terdaftar.':kind==='division'?'Nama divisi sudah terdaftar.':kind==='position-code'?'Kode Posisi sudah terdaftar.':'Nama area sudah terdaftar.');document.getElementById('new-master-value').value=value;document.getElementById('new-master-value').focus();return;}
+  masterSaving=true;
+  try{
+    if(kind==='division'){const added={id:makeMasterId('DIV'),name:value},next=[...divisions,added];await writeMasterData(props,areaPositions,locations,next);divisions=next;manageDivisionId=added.id;settingsNotice='Divisi berhasil ditambahkan.';}
+    else if(kind==='property'){const added={id:makeMasterId('PROP'),name:value},next=[...props,added];await writeMasterData(next,areaPositions,locations);props=next;managePropertyId=added.id;settingsNotice='Properti berhasil ditambahkan.';}
+    else if(kind==='position-code'){const next=[...positionCodes,value];await writeMasterData(props,areaPositions,locations,divisions,next);positionCodes=next;managePositionCode=value;if(!s.position)s.position=value;settingsNotice='Kode Posisi berhasil ditambahkan.';}
+    else{const next=[...areaPositions,value];await writeMasterData(props,next,locations);areaPositions=next;manageAreaPosition=value;settingsNotice='Area berhasil ditambahkan.';}
+    render();masterAddDialog.close();
+  }catch(err){renderMasterAddDialog(kind,err?.message || 'Gagal menyimpan master data.');document.getElementById('new-master-value').value=value;document.getElementById('new-master-value').focus();}
+  finally{masterSaving=false;renderSettingsDialog();}
+});
+locationDialog.addEventListener('input',e=>{
+  const input=e.target.closest('#new-location');if(!input)return;
+  const start=input.selectionStart,end=input.selectionEnd,upper=input.value.toLocaleUpperCase('id-ID');
+  if(upper!==input.value){input.value=upper;input.setSelectionRange(start,end);}
+});
+locationDialog.addEventListener('submit',async e=>{
+  if(e.target.id!=='add-location-form')return;e.preventDefault();if(locationSaving)return;
+  const input=e.target.elements.value,name=String(input.value||'').trim().toLocaleUpperCase('id-ID');if(!name||!s.property||!s.areaPosition)return;
+  const key=makeLocationKey(s.property,s.areaPosition,name);
+  if(locations.some(x=>makeLocationKey(x.propertyId,x.areaPosition,x.name)===key)){renderLocationDialog('Nama / Nomor Lokasi sudah terdaftar untuk properti dan posisi ini.');document.getElementById('new-location').value=name;document.getElementById('new-location').focus();return;}
+  locationSaving=true;const next=[...locations,{id:makeMasterId('LOC'),key,propertyId:s.property,areaPosition:s.areaPosition,name}];
+  try{
+    if (rmisLive) {
+      const areaId = rmisType('AREA').find(r => r.name === s.areaPosition)?.master_id;
+      const added = await rmisCall('rmisTambahLokasi', s.property, areaId, name);
+      locations = [...locations, {...added, propertyId:s.property, areaPosition:s.areaPosition,
+        key:makeLocationKey(s.property, s.areaPosition, added.name)}];
+      s.room = added.name;
+    } else {
+      await writeMasterData(props,areaPositions,next);
+      locations=next;
+      s.room=name;
+    }
+    locationDialog.close();
+    render();
+  }
+  catch(err){renderLocationDialog(err?.message || 'Gagal menyimpan lokasi.');document.getElementById('new-location').value=name;document.getElementById('new-location').focus();}
+  finally{locationSaving=false;}
+});
+root.addEventListener('change',e=>{
+  let t=e.target;
+  if(t.id==='division'){s.division=t.value;render();if(getDivision())document.getElementById('property').focus();}
+  else if(t.id==='property'){s.property=t.value;s.areaPosition='';s.room='';s.position='';render();if(prop())document.getElementById('area-position').focus();}
+  else if(t.id==='area-position'){s.areaPosition=t.value;s.room='';render();if(s.areaPosition){const select=document.getElementById('room');if(select.disabled)document.querySelector('[data-act="add-location"]')?.focus();else select.focus();}}
+  else if(t.id==='room'){s.room=t.value;root.querySelector('[data-act=start]').disabled=!getDivision()||!prop()||!s.areaPosition||!s.room.trim();}
+  else if(t.id==='position'){if(!availablePositionCodes().includes(t.value))return;if(s.position!==t.value&&Object.keys(s.data).length&&!confirm('Ganti kode posisi? Checklist posisi sebelumnya yang belum disimpan akan dikosongkan.')){t.value=s.position;return;}if(s.position!==t.value){s.data={};s.note='';s.cat=0;}s.position=t.value;positionNotice='';syncHistory();}
+  else if(t.dataset.spec){let id=t.dataset.spec;s.data[id]={...get(id),spec:t.value};updateItem(id);}
+});
+root.addEventListener('input',e=>{let t=e.target;if(t.dataset.custom){let id=t.dataset.custom;s.data[id]={...get(id),custom:t.value};updateItem(id);}if(t.id==='note')s.note=t.value;});
+root.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b||b.disabled||saving||deletingLocation||deletingPositionRecord)return;
+  switch(b.dataset.act){
+    case 'add-location':if(prop()&&s.areaPosition)openLocationDialog();break;
+    case 'saved-position':openPositionRecordDialog(b.dataset.position);break;
+    case 'start':{
+      if(!getDivision()||!prop()||!s.areaPosition||!s.room.trim())return;
+      s.room=s.room.trim();const available=availablePositionCodes();s.position=available.includes(s.position)?s.position:(available[0]||'');editingRecordKey='';positionNotice='';s.cat=0;s.data={};s.note='';go('check');syncHistory();break;
+    }
+    case 'back':if(confirm('Kembali ke pemilihan lokasi? Checklist posisi sebelumnya akan dipertahankan sampai Anda memulai pendataan baru.')){editingRecordKey='';positionNotice='';go('home');}break;
+    case 'delete-location':deleteCurrentLocation();break;
+    case 'save':saveOnce(b);break;
+    case 'retry':syncHistory();break;
+    case 'another':s.areaPosition='';s.room='';s.position='';s.data={};s.note='';editingRecordKey='';positionNotice='';go('home');break;
+    case 'history':go('history');syncHistory();break;
+    case 'home':go('home');break;
+  }
+});
+async function initializeApp(){try{await loadMasterData();}catch(err){settingsNotice='Gagal memuat master data lokal.';}render();syncHistory(true);}
+
+// Apps Script uses the spreadsheet as the source of truth.
+const rmisLive = true;
+let rmisMaster = [], rmisCatalog = [];
+let dcipApi;
+const rmisCall = (name, ...args) => dcipApi[name](...args);
+const rmisType = type => rmisMaster.filter(r => r.master_type === type);
+const rmisFind = (type, id) => rmisType(type).find(r => r.master_id === id);
+const rmisPosition = name => rmisType('KODE_POSISI').find(r => r.name === name);
+const rmisLocation = () => locations.find(r => r.key === makeLocationKey(s.property, s.areaPosition, s.room));
+const rmisOptions = name => rmisCatalog.filter(r =>
+  r.division_code === s.division && r.position_code_id === rmisPosition(name)?.master_id
+);
+function rmisGroups(name) {
+  const items = new Map();
+  for (const r of rmisOptions(name)) {
+    if (!items.has(r.item_id)) items.set(r.item_id, [r.item_id, r.item_order + '. ' + r.item_name, []]);
+    if (!['Lainnya', 'Tidak Ada', 'Belum diketahui'].includes(r.option_value)) items.get(r.item_id)[2].push(r.option_value);
+  }
+  return items.size ? [{name, items:[...items.values()]}] : [];
+}
+if (rmisLive) {
+  positionCodes = [];
+  areaPositions = [];
+  loadMasterData = async function () {
+    ({master:rmisMaster, katalog:rmisCatalog} = await rmisCall('rmisMuat'));
+    divisions = rmisType('DIVISI').map(r => ({id:r.master_id, name:r.name}));
+    props = rmisType('PROPERTI').map(r => ({id:r.master_id, name:r.name}));
+    areaPositions = rmisType('AREA').map(r => r.name);
+    positionCodes = rmisType('KODE_POSISI').map(r => r.name);
+    locations = rmisType('LOKASI').map(r => {
+      const areaPosition = rmisFind('AREA', r.parent_area_id)?.name;
+      return {id:r.master_id, propertyId:r.parent_property_id, areaPosition, name:r.name,
+        key:makeLocationKey(r.parent_property_id, areaPosition, r.name)};
+    }).filter(r => r.areaPosition);
+  };
+  const existingSaved = savedPositionRecords;
+  savedPositionRecords = function () {
+    return existingSaved().filter(r => r.divisionId === s.division);
+  };
+  const existingAvailable = availablePositionCodes;
+  availablePositionCodes = () => existingAvailable().filter(name => rmisOptions(name).length);
+  const existingStatus = positionStatus;
+  positionStatus = () => !checking && !storageError &&
+    !rmisCatalog.some(r => r.division_code === s.division)
+    ? '<p class="muted">Katalog checklist untuk divisi ini belum tersedia.</p>'
+    : existingStatus();
+  readMockRecords = async function () {
+    if (!s.division) return [];
+    const division = s.division;
+    const rows = await rmisCall('rmisBacaInspeksi', division, rmisLocation()?.id || '');
+    const byId = new Map();
+    for (const r of rows) {
+      const id = r.inspection_id;
+      if (!byId.has(id)) byId.set(id, {
+        key:id, divisionId:division, division:rmisFind('DIVISI', division)?.name || division,
+        propertyId:r.property_id, property:rmisFind('PROPERTI', r.property_id)?.name || r.property_id,
+        areaPosition:rmisFind('AREA', r.area_id)?.name || r.area_id, room:r.location_name,
+        position:rmisFind('KODE_POSISI', r.position_code_id)?.name || r.position_code_id,
+        time:r.updated_at, data:{}
+      });
+      byId.get(id).data[r.item_id] = {spec:r.option_value, custom:r.custom_specification};
+    }
+    return [...byId.values()];
+  };
+  syncHistory = async function () {
+    const seq = ++syncSeq;
+    checking = true; storageError = ''; render();
+    try {
+      const records = await readMockRecords();
+      if (seq === syncSeq) s.history = records;
+    } catch (err) {
+      if (seq === syncSeq) storageError = err.message || 'Gagal membaca pendataan.';
+    } finally {
+      if (seq === syncSeq) { checking = false; render(); }
+    }
+  };
+  async function kirim(record, inspectionId) {
+    const opsi = rmisOptions(record.position);
+    const answers = Object.entries(record.data).map(([itemId, jawaban]) => ({
+      option_id: opsi.find(r => r.item_id === itemId && r.option_value === jawaban.spec)?.option_id || '',
+      custom_specification: jawaban.custom || ''
+    }));
+    const result = await rmisCall('rmisSimpanInspeksi', {
+      division_code:s.division, location_id:rmisLocation()?.id,
+      position_code_id:rmisPosition(record.position)?.master_id,
+      inspection_id:inspectionId, answers
+    });
+    record.key = result.inspection_id;
+  }
+  addMockRecord = record => kirim(record, '');
+  putMockRecord = record => kirim(record, record.key);
+  deleteMockRecord = key => rmisCall('rmisHapusInspeksi', s.division, key);
+  writeMasterData = async function (nextProps=props, nextAreas=areaPositions,
+      nextLocations=locations, nextDivisions=divisions, nextCodes=positionCodes) {
+    const grup = [
+      ['PROPERTI', props, nextProps], ['AREA', areaPositions, nextAreas],
+      ['DIVISI', divisions, nextDivisions], ['KODE_POSISI', positionCodes, nextCodes]
+    ];
+    const nama = v => typeof v === 'string' ? v : v.name;
+    for (const [type, sebelum, sesudah] of grup) {
+      const baru = sesudah.find(v => !sebelum.some(old => nama(old) === nama(v)));
+      const hapus = sebelum.find(v => !sesudah.some(next => nama(next) === nama(v)));
+      if (baru !== undefined) {
+        const added = await rmisCall('rmisUbahMaster', type, 'tambah', nama(baru));
+        if (typeof baru === 'object') Object.assign(baru, added);
+        rmisMaster.push({master_type:type, master_id:added.id, name:added.name});
+        return;
+      }
+      if (hapus !== undefined) {
+        const id = hapus.id || rmisType(type).find(r => r.name === nama(hapus))?.master_id;
+        await rmisCall('rmisUbahMaster', type, 'hapus', id);
+        rmisMaster = rmisMaster.filter(r => r.master_id !== id &&
+          !(r.master_type === 'LOKASI' && (r.parent_area_id === id || r.parent_property_id === id)));
+        return;
+      }
+    }
+  };
+  deleteCurrentLocation = async function () {
+    const location = rmisLocation();
+    if (!location || deletingLocation) return;
+    if (!confirm('Hapus lokasi "' + location.name + '" beserta checklist yang tersimpan untuk semua divisi?')) return;
+    deletingLocation = true; locationDeleteError = ''; ++syncSeq; render();
+    try {
+      await rmisCall('rmisHapusLokasi', location.id);
+      locations = locations.filter(r => r.id !== location.id);
+      rmisMaster = rmisMaster.filter(r => r.master_id !== location.id);
+      s.history = []; s.room = ''; s.position = ''; s.data = {}; s.note = '';
+      editingRecordKey = ''; positionNotice = ''; s.page = 'home';
+    } catch (err) {
+      locationDeleteError = err.message || 'Gagal menghapus lokasi.';
+    } finally {
+      deletingLocation = false; checking = false; render();
+    }
+  };
+
+  initializeApp = async function () {
+    try {
+      await loadMasterData();
+      await syncHistory();
+    } catch (err) {
+      root.textContent = err.message || 'Gagal memuat database RMIS.';
+    }
+  };
+}
+
+async function startAuthenticatedApp() {
+  const authApp = document.getElementById('auth-app');
+  const app = document.getElementById('app');
+  const settingsButton = document.getElementById('open-settings');
+  const {createDcipApi} = await import('./dcip-api.js');
+  dcipApi = await createDcipApi();
+  async function showSession() {
+    const profile = await dcipApi.currentProfile();
+    authApp.classList.toggle('hidden', !!profile);
+    app.classList.toggle('hidden', !profile);
+    settingsButton.classList.toggle('hidden', !profile || profile.role !== 'admin');
+    document.getElementById('manage-accounts').classList.toggle('hidden', !profile || profile.role !== 'admin');
+    document.getElementById('logout').classList.toggle('hidden', !profile);
+    if (profile) await initializeApp();
+  }
+  document.getElementById('login-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const button = form.querySelector('button');
+    button.disabled = true;
+    document.getElementById('login-error').textContent = '';
+    try {
+      await dcipApi.signIn(form.username.value, form.password.value);
+      form.password.value = '';
+      await showSession();
+    } catch (error) {
+      document.getElementById('login-error').textContent = error.message;
+    } finally { button.disabled = false; }
+  });
+  document.getElementById('logout').addEventListener('click', async () => {
+    await dcipApi.signOut();
+    s = {page:'home',division:'',property:'',areaPosition:'',room:'',position:'',cat:0,data:{},note:'',history:[]};
+    await showSession();
+  });
+  await showSession();
+}
+startAuthenticatedApp().catch(error => {
+  document.getElementById('auth-app').classList.remove('hidden');
+  document.getElementById('login-error').textContent = error.message;
+});
+</script></body></html>
+
+
