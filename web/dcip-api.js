@@ -44,6 +44,22 @@ export async function createDcipApi() {
       return checked(await supabase.from('user_profiles')
         .select('id,username,display_name,role,division_id').eq('id', user.id).single())
     },
+    async changeMaterialOption(scope, value, removeId) {
+      const matches = catalog.filter(row => row.division_code === scope.division_id &&
+        row.position_code_id === scope.position_id && row.item_id === scope.item_id)
+      const retire = (id, retired) => supabase.from('material_options').update({ retired })
+        .match(scope).eq('id', id).select('id').single()
+      if (removeId) return checked(await retire(removeId, true))
+      const match = matches.find(row => row.option_value.trim().toLocaleLowerCase('id-ID') === value.toLocaleLowerCase('id-ID'))
+      if (match) {
+        if (match.retired) return checked(await retire(match.option_id, false))
+        throw new Error('Spesifikasi ini sudah tersedia.')
+      }
+      return checked(await supabase.from('material_options').insert({
+        ...scope, id: crypto.randomUUID(), value, option_type: 'REGULER', source: 'ADMIN',
+        display_order: Math.max(0, ...matches.map(row => row.option_order)) + 1,
+      }).select('id').single())
+    },
     async rmisMuat() {
       const tables = ['divisions', 'properties', 'areas', 'position_codes', 'locations', 'material_items', 'material_options']
       const values = await Promise.all(tables.map(table => supabase.from(table).select('*')))
@@ -73,6 +89,8 @@ export async function createDcipApi() {
           item_name: item?.name || option.item_id,
           item_order: item?.display_order || 1,
           option_id: option.id,
+          retired: option.retired === true,
+          option_type: option.option_type,
           option_value: option.value,
           option_order: option.display_order
         }
