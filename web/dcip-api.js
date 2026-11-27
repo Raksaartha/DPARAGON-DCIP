@@ -6,7 +6,10 @@ const supabase = createClient(
 )
 
 function checked(result) {
-  if (result.error) throw new Error(result.error.message)
+  if (result.error) {
+    if (result.error.code === '23505') throw new Error('Data dengan nama yang sama sudah tersedia atau sedang diproses.')
+    throw new Error(result.error.message)
+  }
   return result.data
 }
 
@@ -93,6 +96,43 @@ export async function createDcipApi() {
           custom_specification: answer.custom_specification
         }
       })
+    },
+    async rmisBacaStatusPosisi(locationId) {
+      if (!locationId) return []
+      return checked(await supabase.from('location_position_status')
+        .select('location_id,property_id,position_id,status,created_by,updated_by,created_at,updated_at')
+        .eq('location_id', locationId))
+    },
+    async rmisSimpanStatusPosisi(locationId, positionId, status) {
+      return checked(await supabase.rpc('set_location_position_status', {
+        p_location_id: locationId,
+        p_position_id: positionId,
+        p_status: status
+      }))
+    },
+    async rmisAjukanUsulan(input) {
+      const row = checked(await supabase.from('catalog_requests').insert({
+        division_id: input.division_id,
+        request_type: input.request_type,
+        value: String(input.value || '').trim(),
+        property_id: input.property_id || null,
+        location_id: input.location_id || null,
+        position_id: input.position_id || null,
+        item_id: input.item_id || null
+      }).select('id,division_id,request_type,value,property_id,location_id,position_id,item_id,status,created_at').single())
+      return row
+    },
+    async rmisBacaUsulan() {
+      return checked(await supabase.from('catalog_requests')
+        .select('id,division_id,request_type,value,property_id,location_id,position_id,item_id,status,requested_by,created_at')
+        .in('status', ['DIAJUKAN','DIPROSES'])
+        .order('created_at', {ascending:false}))
+    },
+    async rmisTinjauUsulan(requestId, action) {
+      return checked(await supabase.rpc('review_catalog_request', {
+        p_request_id: requestId,
+        p_action: action
+      }))
     },
     async rmisSimpanInspeksi(input) {
       const answers = input.answers.map(answer => {
