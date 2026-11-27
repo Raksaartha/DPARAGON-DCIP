@@ -87,6 +87,17 @@ select:required:invalid{color:#8a94a3}select option{color:var(--text)}
     <div id="account-data-list"></div>
   </div>
 </dialog>
+<dialog id="account-edit-dialog" class="modal" aria-labelledby="account-edit-title">
+  <div class="modal-body">
+    <div class="modal-header"><h2 id="account-edit-title">Edit Akun</h2><button type="button" class="secondary" id="close-account-edit">Tutup</button></div>
+    <form id="account-edit-form">
+      <div class="field"><label for="account-edit-name">Nama petugas</label><input id="account-edit-name" name="displayName" required minlength="2" maxlength="80"></div>
+      <div class="field"><label for="account-edit-division">Divisi</label><select id="account-edit-division" name="divisionId" required></select></div>
+      <p id="account-edit-status" role="status" class="small"></p>
+      <div class="modal-actions"><button type="submit">Simpan</button><button type="button" class="danger-button" id="delete-account">Hapus</button></div>
+    </form>
+  </div>
+</dialog>
 <dialog id="settings-dialog" class="modal" aria-labelledby="settings-title"></dialog>
 <dialog id="master-add-dialog" class="modal master-add-dialog" aria-labelledby="master-add-title"></dialog>
 <dialog id="location-dialog" class="modal" aria-labelledby="location-title"></dialog>
@@ -384,58 +395,59 @@ let createdAccountCredentials = null;
 const accountDataDialog = document.getElementById('account-data-dialog');
 const accountDataList = document.getElementById('account-data-list');
 const accountDataStatus = document.getElementById('account-data-status');
+const accountEditDialog = document.getElementById('account-edit-dialog');
+const accountEditForm = document.getElementById('account-edit-form');
+const accountEditStatus = document.getElementById('account-edit-status');
 let accountDataBusy = false;
+let selectedAccount = null;
 
-async function refreshAccountData(message = '') {
+function addAccountRow(account) {
+  const row = document.createElement('div');
+  row.className = 'settings-section between';
+  const username = document.createElement('strong');
+  username.textContent = account.username;
+  const edit = document.createElement('button');
+  edit.type = 'button';
+  edit.className = 'secondary';
+  edit.textContent = 'Edit';
+  edit.setAttribute('aria-label', 'Edit akun ' + account.username);
+  edit.setAttribute('aria-haspopup', 'dialog');
+  edit.addEventListener('click', () => {
+    selectedAccount = { account, row };
+    document.getElementById('account-edit-title').textContent = 'Edit Akun · ' + account.username;
+    accountEditStatus.textContent = '';
+    accountEditForm.elements.displayName.value = account.display_name;
+    const division = accountEditForm.elements.divisionId;
+    division.replaceChildren(new Option('Pilih divisi', ''));
+    for (const item of divisions) division.add(new Option(item.name, item.id));
+    division.value = account.division_id || '';
+    accountEditDialog.showModal();
+  });
+  row.append(username, edit);
+  accountDataList.append(row);
+}
+
+async function refreshAccountData() {
   accountDataList.replaceChildren();
   accountDataStatus.textContent = 'Memuat akun…';
   const { accounts } = await dcipApi.manageStaffAccount({ action: 'list' });
-  accountDataStatus.textContent = message || (accounts.length ? '' : 'Belum ada akun petugas.');
-  for (const account of accounts) {
-    const form = document.createElement('form');
-    form.className = 'settings-section';
-    form.dataset.accountId = account.id;
-    form.dataset.username = account.username;
-    const title = document.createElement('h3');
-    title.textContent = account.username;
-    const nameLabel = document.createElement('label');
-    nameLabel.textContent = 'Nama petugas';
-    const name = document.createElement('input');
-    name.name = 'displayName';
-    name.required = true;
-    name.minLength = 2;
-    name.maxLength = 80;
-    name.value = account.display_name;
-    nameLabel.append(name);
-    const divisionLabel = document.createElement('label');
-    divisionLabel.textContent = 'Divisi';
-    const division = document.createElement('select');
-    division.name = 'divisionId';
-    division.required = true;
-    division.add(new Option('Pilih divisi', ''));
-    for (const item of divisions) division.add(new Option(item.name, item.id));
-    division.value = account.division_id || '';
-    divisionLabel.append(division);
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-    actions.innerHTML = '<button type="submit">Simpan</button><button type="button" class="danger-button" data-delete-account>Hapus</button>';
-    form.append(title, nameLabel, divisionLabel, actions);
-    accountDataList.append(form);
-  }
+  accountDataStatus.textContent = accounts.length ? '' : 'Belum ada akun petugas.';
+  for (const account of accounts) addAccountRow(account);
 }
 
-async function runAccountDataAction(work) {
+async function runAccountDataAction(status, work) {
   if (accountDataBusy) return;
   accountDataBusy = true;
-  accountDataList.inert = true;
-  accountDataStatus.classList.remove('error');
+  const controls = status === accountEditStatus ? accountEditForm : accountDataList;
+  controls.inert = true;
+  status.classList.remove('error');
   try {
     await work();
   } catch (error) {
-    accountDataStatus.textContent = error.message;
-    accountDataStatus.classList.add('error');
+    status.textContent = error.message;
+    status.classList.add('error');
   } finally {
-    accountDataList.inert = false;
+    controls.inert = false;
     accountDataBusy = false;
   }
 }
@@ -443,38 +455,44 @@ async function runAccountDataAction(work) {
 settingsDialog.addEventListener('click', event => {
   if (!event.target.closest('#open-account-data')) return;
   accountDataDialog.showModal();
-  runAccountDataAction(() => refreshAccountData());
+  runAccountDataAction(accountDataStatus, refreshAccountData);
 });
-document.getElementById('close-account-data').addEventListener('click', () => {
-  if (!accountDataBusy) accountDataDialog.close();
-});
-accountDataDialog.addEventListener('cancel', event => {
-  if (accountDataBusy) event.preventDefault();
-});
-accountDataList.addEventListener('submit', event => {
+for (const [dialog, closeId] of [[accountDataDialog, 'close-account-data'], [accountEditDialog, 'close-account-edit']]) {
+  document.getElementById(closeId).addEventListener('click', () => {
+    if (!accountDataBusy) dialog.close();
+  });
+  dialog.addEventListener('cancel', event => {
+    if (accountDataBusy) event.preventDefault();
+  });
+}
+accountEditDialog.addEventListener('close', () => { selectedAccount = null; });
+accountEditForm.addEventListener('submit', event => {
   event.preventDefault();
-  const form = event.target;
-  runAccountDataAction(async () => {
-    accountDataStatus.textContent = 'Menyimpan perubahan…';
+  if (!selectedAccount) return;
+  const { account } = selectedAccount;
+  const displayName = accountEditForm.elements.displayName.value.trim();
+  const divisionId = accountEditForm.elements.divisionId.value;
+  runAccountDataAction(accountEditStatus, async () => {
+    accountEditStatus.textContent = 'Menyimpan perubahan…';
     await dcipApi.manageStaffAccount({
-      action: 'edit',
-      id: form.dataset.accountId,
-      display_name: form.elements.displayName.value,
-      division_id: form.elements.divisionId.value,
+      action: 'edit', id: account.id, display_name: displayName, division_id: divisionId,
     });
+    account.display_name = displayName;
+    account.division_id = divisionId;
+    accountEditDialog.close();
     accountDataStatus.textContent = 'Perubahan akun disimpan.';
   });
 });
-accountDataList.addEventListener('click', event => {
-  const button = event.target.closest('[data-delete-account]');
-  if (!button || accountDataBusy) return;
-  const form = button.closest('form');
-  if (!confirm('Hapus akun ' + form.dataset.username + '? Riwayat pendataan tetap tersimpan.')) return;
-  runAccountDataAction(async () => {
-    accountDataStatus.textContent = 'Menghapus akun…';
-    await dcipApi.manageStaffAccount({ action: 'delete', id: form.dataset.accountId });
-    form.remove();
-    accountDataStatus.textContent = 'Akun dihapus.';
+document.getElementById('delete-account').addEventListener('click', () => {
+  if (!selectedAccount || accountDataBusy) return;
+  const { account, row } = selectedAccount;
+  if (!confirm('Hapus akun ' + account.username + '? Riwayat pendataan tetap tersimpan.')) return;
+  runAccountDataAction(accountEditStatus, async () => {
+    accountEditStatus.textContent = 'Menghapus akun…';
+    await dcipApi.manageStaffAccount({ action: 'delete', id: account.id });
+    accountEditDialog.close();
+    row.remove();
+    accountDataStatus.textContent = accountDataList.children.length ? 'Akun dihapus.' : 'Akun dihapus. Belum ada akun petugas.';
   });
 });
 
