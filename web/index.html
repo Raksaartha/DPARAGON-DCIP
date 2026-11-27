@@ -417,7 +417,8 @@ function openChecklistTools(itemId) {
         '<div class="field"><label for="remove-spec">Opsi yang akan dihapus</label><select id="remove-spec" name="remove">' +
         options(materials.map(row => [row.option_id,row.option_value]), '', 'Pilih opsi') + '</select></div>'
       : '<p class="muted">Usulkan spesifikasi baru untuk ditinjau admin.</p>';
-  const actions = !entry ? '<button type="submit">Buka komponen</button>'
+  const actions = !entry ? '<button type="submit">Buka komponen</button>' +
+    (canManage ? '<button type="button" class="danger-button" data-remove-component disabled>Hapus Komponen</button>' : '')
     : canManage ? '<button type="submit">Tambah</button><button type="button" class="danger-button" data-remove>Hapus opsi</button><button type="button" class="danger-button" data-remove-component>Hapus Komponen</button>'
     : '<button type="button" data-propose>Ajukan spesifikasi</button>';
   dialog.innerHTML = '<form class="modal-body"><div class="modal-header"><div><h2 id="checklist-tools-title">' +
@@ -428,20 +429,20 @@ function openChecklistTools(itemId) {
   const status = dialog.querySelector('[role="status"]');
   let busy = false;
   dialog.oncancel = event => { if (busy) event.preventDefault(); };
-  async function change(value, removeId, removeComponent = false) {
+  async function change(value, removeId, componentId = null) {
     if (busy) return;
     busy = true;
     form.inert = true;
     try {
-      if (removeComponent) {
-        await rmisCall('retireChecklistComponent', { division_id: scope.division_id, position_id: scope.position_id, id: itemId });
+      if (componentId) {
+        await rmisCall('retireChecklistComponent', { division_id: scope.division_id, position_id: scope.position_id, id: componentId });
       } else {
         await rmisCall('changeMaterialOption', scope, value, removeId);
       }
       await loadMasterData();
       dialog.close();
       render();
-      if (removeComponent) root.querySelector('[data-act="pick-component"]')?.focus();
+      if (componentId) root.querySelector('[data-act="pick-component"]')?.focus();
       else document.getElementById('spec-' + itemId)?.focus();
     } catch (error) {
       status.textContent = error.message;
@@ -462,6 +463,11 @@ function openChecklistTools(itemId) {
       else status.textContent = 'Isi spesifikasi baru.';
     }
   };
+  if (!entry && canManage) {
+    form.elements.component.addEventListener('change', () => {
+      form.querySelector('[data-remove-component]').disabled = !form.elements.component.value;
+    });
+  }
   form.onclick = event => {
     if (busy) return;
     if (event.target.closest('[data-close]')) dialog.close();
@@ -470,9 +476,11 @@ function openChecklistTools(itemId) {
       openRequestDialog('SPESIFIKASI_MATERIAL', itemId);
     }
     if (canManage && event.target.closest('[data-remove-component]')) {
+      const target = entry || all.find(([id]) => id === form.elements.component.value);
+      if (!target) { status.textContent = 'Pilih komponen yang akan dihapus.'; return; }
       if (all.length <= 1) { status.textContent = 'Sisakan minimal satu komponen pada kode posisi ini.'; return; }
-      if (confirm('Hapus ' + entry[1] + ' dari checklist divisi dan kode posisi ini? Riwayat tetap tersimpan.')) {
-        change('', null, true);
+      if (confirm('Hapus ' + target[1] + ' dari checklist divisi dan kode posisi ini? Riwayat tetap tersimpan.')) {
+        change('', null, target[0]);
       }
     }
     if (event.target.closest('[data-remove]')) {
