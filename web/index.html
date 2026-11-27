@@ -470,7 +470,7 @@ accountSuccessDialog.addEventListener('close', () => {
 });
 document.getElementById('copy-account-credentials').addEventListener('click', async () => {
   if (!createdAccountCredentials) return;
-  const message = 'ID : ' + createdAccountCredentials.username + '\\nPASSWORD : ' + createdAccountCredentials.password;
+  const message = 'ID : ' + createdAccountCredentials.username + '\nPASSWORD : ' + createdAccountCredentials.password;
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(message);
@@ -487,6 +487,8 @@ document.getElementById('copy-account-credentials').addEventListener('click', as
       if (!copied) throw new Error('Clipboard tidak tersedia');
     }
     accountCopyStatus.textContent = 'Tersalin. Silakan tempel di WhatsApp.';
+    accountCopyStatus.classList.remove('error');
+    accountCopyStatus.classList.add('good');
     accountCopyStatus.hidden = false;
   } catch (error) {
     accountCopyStatus.textContent = 'Gagal menyalin. Silakan salin ID dan kata sandi secara manual.';
