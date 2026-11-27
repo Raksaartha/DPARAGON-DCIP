@@ -75,7 +75,7 @@ function setupDcipAutoSync() {
 
 function removeDcipAutoSync() {
   ScriptApp.getProjectTriggers().forEach(trigger => {
-    if (trigger.getHandlerFunction() === 'syncDcipToSheets') ScriptApp.deleteTrigger(trigger);
+    if (['syncDcipToSheets','handleUsulanConfirmation'].includes(trigger.getHandlerFunction())) ScriptApp.deleteTrigger(trigger);
   });
 }
 
