@@ -25,6 +25,30 @@ select:required:invalid{color:#8a94a3}select option{color:var(--text)}
 .check-location-header{padding:0;background:transparent;border:0;border-radius:0;margin:0 0 14px}.check-location-header h1{color:var(--text)}.saved-positions{padding:14px 0 0;margin:14px 0 0;background:transparent;border:0;border-top:1px solid var(--border);border-radius:0}.saved-positions-label{color:var(--text)}.position-chip{background:#f1f5f9;border-color:var(--border);color:var(--text)}.position-chip:hover:not(:disabled){background:#eaf3ff}.edit-position-display{background:#f1f5f9;border-color:var(--border);color:var(--text)}.checklist-position-picker{padding:16px 16px 0}.checklist-position-picker .field{margin:0;padding-bottom:16px;border-bottom:1px solid var(--border)}
 .check-identity-panel{margin:0 0 14px}.check-identity-panel .muted{margin-bottom:14px}.checklist-panel{margin:12px 0 20px;overflow:hidden;background:#f8fafc;border:1px solid var(--border);border-radius:12px}.checklist-group{margin:0}.checklist-panel .item{padding:18px 16px;border-bottom:1px solid var(--border)}.checklist-panel .checklist-group:last-child .item:last-child{border-bottom:0}.checklist-panel .checklist-group>h2{margin:0;padding:16px;border-bottom:1px solid var(--border);font-size:17px}
 .mark-missing-button{width:100%;margin-top:8px}.missing-position-list{padding-top:12px;margin-top:12px;border-top:1px solid var(--border)}.is-missing-chip{background:#fff7ed;border-color:#fdba74;color:#9a3412}.is-missing-chip:hover:not(:disabled){background:#ffedd5}.request-entry-button{margin:10px 0 16px}.admin-requests .between{margin-bottom:10px}.admin-requests .between h3{margin:0}.small-button{min-height:36px;padding:6px 10px;font-size:13px}.request-card{padding:12px 0;border-bottom:1px solid var(--border)}.request-card:last-child{border-bottom:0}.request-value{margin:6px 0;font-weight:650;overflow-wrap:anywhere}.request-card .muted{margin:4px 0 10px}.request-actions{display:flex;flex-wrap:wrap;gap:8px}.request-actions button{flex:1 1 100px;min-height:40px;padding:8px;font-size:13px}.request-actions .danger-button{color:white}
+
+/* Match the cards and controls on the home page. */
+#settings-dialog .settings-section {
+  margin: 12px 0 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #f8fafc;
+}
+#settings-dialog .settings-section h3 { margin-top: 0; }
+#settings-dialog .master-picker { align-items: flex-end; }
+#settings-dialog .master-picker select,
+#settings-dialog .master-picker .plus-button,
+#settings-dialog #property-city { height: 48px; }
+#settings-dialog .master-add {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+#settings-dialog #property-city-form .field { margin: 0 0 10px; }
+#settings-dialog #property-city-form button { width: 100%; }
+@media (max-width: 350px) {
+  #settings-dialog .settings-section { padding: 14px; }
+}
 </style>
 </head><body>
 <header><div class="inner header-row"><div class="brand-copy"><div class="brand">D'PARAGON</div><div class="subtitle">Room Material Inspection</div></div><a id="manage-accounts" class="hidden" href="./accounts.html" style="color:white">Akun</a><button type="button" class="settings-button" id="open-settings" aria-label="Pengaturan master data" title="Pengaturan">⚙</button><button type="button" class="settings-button hidden" id="logout" aria-label="Keluar" title="Keluar">↪</button></div></header>
