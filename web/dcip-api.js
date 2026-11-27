@@ -39,7 +39,7 @@ export async function createDcipApi() {
       const user = data.user
       if (!user) return null
       return checked(await supabase.from('user_profiles')
-        .select('id,username,display_name,role').eq('id', user.id).single())
+        .select('id,username,display_name,role,division_id').eq('id', user.id).single())
     },
     async rmisMuat() {
       const tables = ['divisions', 'properties', 'areas', 'position_codes', 'locations', 'material_items', 'material_options']
