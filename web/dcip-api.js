@@ -29,16 +29,20 @@ export async function createDcipApi() {
     async signOut() {
       checked(await supabase.auth.signOut())
     },
-    async signIn(username, password, scope = '') {
+    async signIn(username, password) {
       const id = String(username).trim().toLowerCase()
       if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(id)) throw new Error('ID pengguna tidak valid.')
-      if (scope && (id !== 'dparagonadmin' || !['TEKNIS','INVENTORY','RD'].includes(scope))) {
-        throw new Error('Masukkan ID Sub Admin yang sesuai.')
+      const aliases = id === 'dparagonadmin'
+        ? [id, id + '.teknis', id + '.inventory', id + '.rd']
+        : [id]
+      for (const alias of aliases) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: alias + '@accounts.dparagon.invalid', password
+        })
+        if (!error) return
+        if (error.code !== 'invalid_credentials') throw error
       }
-      const alias = scope ? id + '.' + scope.toLowerCase() : id
-      checked(await supabase.auth.signInWithPassword({
-        email: alias + '@accounts.dparagon.invalid', password
-      }))
+      throw new Error('ID atau kata sandi salah.')
     },
     async currentProfile() {
       const {data, error} = await supabase.auth.getUser()
