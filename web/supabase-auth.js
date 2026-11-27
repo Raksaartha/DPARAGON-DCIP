@@ -24,13 +24,15 @@ export async function signInWithUsername(supabase, username, password) {
   return { user: data.user, profile }
 }
 
-export async function createPetugasAccount(supabase, { username, displayName, password, propertyIds }) {
+export async function createPetugasAccount(supabase, { username, displayName, password, propertyIds, divisionId, city }) {
   const { data, error } = await supabase.functions.invoke('create-account', {
     body: {
       username: String(username ?? '').trim().toLowerCase(),
       display_name: String(displayName ?? '').trim(),
       password: String(password ?? ''),
       property_ids: propertyIds,
+      division_id: divisionId,
+      city,
     },
   })
   if (error) throw new Error(data?.error || error.message || 'Gagal membuat akun petugas.')
