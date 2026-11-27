@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPARAGON DCIP</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fa;color:#17212b;font:16px system-ui,sans-serif}
+header{background:#1565c0;color:white;padding:20px}
+header div,main{max-width:600px;margin:auto}
+main{padding:20px 16px}
+section{background:white;border:1px solid #d4dde7;border-radius:12px;padding:20px;margin-bottom:16px}
+h1,h2{margin:0 0 16px}
+label{display:block;margin:12px 0 6px}
+input:not([type=checkbox]),button{font:inherit;min-height:48px;border:1px solid #b8c7d8;border-radius:8px;padding:10px;width:100%}
+button{background:#1565c0;color:white;font-weight:650;cursor:pointer;margin-top:14px;border:0}
+button:disabled{opacity:.6}
+fieldset{margin:16px 0 0;border:1px solid #d4dde7;border-radius:8px}
+fieldset label{display:flex;align-items:center;gap:10px}
+#status{min-height:1.5em}
+</style>
+</head>
+<body>
+<header><div><strong>DPARAGON DCIP</strong></div></header>
+<main>
+<p id="status" role="status"></p>
+<section id="login" hidden>
+<h1>Masuk</h1>
+<form id="login-form">
+<label for="username">ID pengguna</label>
+<input id="username" name="username" autocomplete="username" required maxlength="32">
+<label for="password">Kata sandi</label>
+<input id="password" name="password" type="password" autocomplete="current-password" required maxlength="72">
+<button>Masuk</button>
+</form>
+</section>
+<section id="account" hidden>
+<h1 id="display-name"></h1>
+<p id="role"></p>
+<h2>Properti yang dapat diakses</h2>
+<ul id="property-list"></ul>
+<p><a href="./index.html">Kembali ke pendataan</a></p>
+<button id="logout" type="button">Keluar</button>
+</section>
+<section id="admin" hidden>
+<h2>Buat akun Petugas</h2>
+<form id="create-form">
+<label for="staff-name">Nama petugas</label>
+<input id="staff-name" name="displayName" minlength="2" maxlength="80" required>
+<label for="staff-id">ID pengguna</label>
+<input id="staff-id" name="username" autocomplete="off" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,31}" required>
+<label for="staff-password">Kata sandi</label>
+<input id="staff-password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="72" required>
+<fieldset id="property-picker"><legend>Akses properti</legend></fieldset>
+<button>Buat akun</button>
+</form>
+</section>
+</main>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
