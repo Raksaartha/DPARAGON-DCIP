@@ -417,7 +417,7 @@ function openChecklistTools(itemId) {
         '<div class="field"><label for="remove-spec">Opsi yang akan dihapus</label><select id="remove-spec" name="remove">' +
         options(materials.map(row => [row.option_id,row.option_value]), '', 'Pilih opsi') + '</select></div>'
       : '<p class="muted">Usulkan spesifikasi baru untuk ditinjau admin.</p>';
-  const actions = !entry ? '<button type="submit">Buka komponen</button>' +
+  const actions = !entry ? '<button type="submit">Buka komponen</button><button type="button" class="secondary" data-new-component>Buat Komponen Baru</button>' +
     (canManage ? '<button type="button" class="danger-button" data-remove-component disabled>Hapus Komponen</button>' : '')
     : canManage ? '<button type="submit">Tambah</button><button type="button" class="danger-button" data-remove>Hapus opsi</button><button type="button" class="danger-button" data-remove-component>Hapus Komponen</button>'
     : '<button type="button" data-propose>Ajukan spesifikasi</button>';
@@ -471,6 +471,10 @@ function openChecklistTools(itemId) {
   form.onclick = event => {
     if (busy) return;
     if (event.target.closest('[data-close]')) dialog.close();
+    if (event.target.closest('[data-new-component]')) {
+      dialog.close();
+      openRequestDialog('KOMPONEN');
+    }
     if (event.target.closest('[data-propose]')) {
       dialog.close();
       openRequestDialog('SPESIFIKASI_MATERIAL', itemId);
