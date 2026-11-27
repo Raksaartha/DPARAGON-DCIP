@@ -52,6 +52,45 @@ Deno.serve(async (req: Request) => {
     return respond(400, { error: 'Data permintaan tidak valid.' })
   }
 
+  if (body.action === 'list') {
+    const { data, error } = await admin.from('user_profiles')
+      .select('id,username,display_name,division_id').eq('role', 'petugas').order('username')
+    if (error) return respond(500, { error: 'Daftar akun gagal dimuat.' })
+    return respond(200, { accounts: data })
+  }
+
+  if (body.action === 'edit' || body.action === 'delete') {
+    const id = String(body.id ?? '')
+    if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)) {
+      return respond(400, { error: 'ID akun tidak valid.' })
+    }
+    const { data: account, error: lookupError } = await admin.from('user_profiles')
+      .select('id').eq('id', id).eq('role', 'petugas').maybeSingle()
+    if (lookupError) return respond(500, { error: 'Akun gagal diperiksa.' })
+    if (!account) return respond(404, { error: 'Akun petugas tidak ditemukan.' })
+
+    if (body.action === 'delete') {
+      const { error } = await admin.auth.admin.deleteUser(id)
+      if (error) return respond(500, { error: 'Akun gagal dihapus.' })
+      return respond(200, { ok: true })
+    }
+
+    const displayName = String(body.display_name ?? '').trim()
+    const divisionId = String(body.division_id ?? '').trim()
+    if (displayName.length < 2 || displayName.length > 80) {
+      return respond(400, { error: 'Nama petugas harus 2–80 karakter.' })
+    }
+    const { data: division, error: divisionError } = await admin.from('divisions')
+      .select('id').eq('id', divisionId).maybeSingle()
+    if (divisionError || !division) return respond(400, { error: 'Pilih divisi yang valid.' })
+    const { data: updated, error } = await admin.from('user_profiles')
+      .update({ display_name: displayName, division_id: divisionId })
+      .eq('id', id).eq('role', 'petugas').select('id').maybeSingle()
+    if (error) return respond(500, { error: 'Perubahan akun gagal disimpan.' })
+    if (!updated) return respond(404, { error: 'Akun petugas tidak ditemukan.' })
+    return respond(200, { ok: true })
+  }
+
   const username = String(body.username ?? '').trim().toLowerCase()
   const displayName = String(body.display_name ?? '').trim()
   const password = String(body.password ?? '')
@@ -98,6 +137,10 @@ Deno.serve(async (req: Request) => {
     user_metadata: { username, display_name: displayName },
   })
   if (createError || !created.user) {
+    if (['email_exists', 'user_already_exists'].includes(createError?.code ?? '') ||
+        /already been registered/i.test(createError?.message ?? '')) {
+      return respond(409, { error: 'ID pengguna sudah terdaftar. Pilih ID lain atau buka Data Akun.' })
+    }
     console.error('Admin createUser failed:', createError?.message)
     return respond(400, { error: 'Akun gagal dibuat. Pastikan nama pengguna belum digunakan dan kata sandi memenuhi syarat.' })
   }
