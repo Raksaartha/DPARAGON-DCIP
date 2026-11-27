@@ -55,6 +55,12 @@ Deno.serve(async (req: Request) => {
   const username = String(body.username ?? '').trim().toLowerCase()
   const displayName = String(body.display_name ?? '').trim()
   const password = String(body.password ?? '')
+  const divisionId = String(body.division_id ?? '').trim()
+  const city = String(body.city ?? '').trim()
+  if (divisionId || city) {
+    const { data: division } = await admin.from('divisions').select('id').eq('id', divisionId).maybeSingle()
+    if (!division || !city) return respond(400, { error: 'Pilih divisi dan kota yang valid.' })
+  }
   const propertyIds = Array.isArray(body.property_ids)
     ? [...new Set(body.property_ids.map(value => String(value).trim()).filter(Boolean))]
     : []
@@ -72,11 +78,15 @@ Deno.serve(async (req: Request) => {
 
   const { data: properties, error: propertiesError } = await admin
     .from('properties')
-    .select('id')
+    .select('id,city')
     .in('id', propertyIds)
   if (propertiesError) return respond(500, { error: 'Gagal memeriksa properti.' })
   if ((properties?.length ?? 0) !== propertyIds.length) {
     return respond(400, { error: 'Salah satu properti yang dipilih tidak ditemukan.' })
+  }
+
+  if (city && properties?.some(property => (property.city ?? '__unassigned__') !== city)) {
+    return respond(400, { error: 'Properti harus berada di kota yang dipilih.' })
   }
 
   // Supabase Auth is the credential store; the UI and staff use a username.
@@ -98,6 +108,7 @@ Deno.serve(async (req: Request) => {
     username,
     display_name: displayName,
     role: 'petugas',
+    division_id: divisionId || null,
   })
   if (profileError) {
     await admin.auth.admin.deleteUser(userId)
