@@ -4,12 +4,16 @@ const DCIP_SYNC = {
   SHEETS: {
     master: 'MASTER DATA',
     options: 'OPSI_MATERIAL',
-    inspection: {TEKNIS: 'TEKNIS', INVENTORY: 'INVENTORY', RD: 'RD'}
+    inspection: {TEKNIS: 'TEKNIS', INVENTORY: 'INVENTORY', RD: 'RD'},
+    proposals: 'USULAN',
+    positionStatus: 'STATUS POSISI'
   },
   HEADERS: {
     master: ['master_type','master_id','name','parent_property_id','parent_area_id','target_sheet','display_order'],
     options: ['option_id','division_code','position_code_id','item_order','item_id','item_name','option_order','option_value','option_type','source'],
-    details: ['inspection_detail_id','inspection_id','location_id','property_id','area_id','location_name','position_code_id','item_id','item_name','option_id','option_value','custom_specification','created_at','updated_at','created_by','updated_by']
+    details: ['inspection_detail_id','inspection_id','location_id','property_id','area_id','location_name','position_code_id','item_id','item_name','option_id','option_value','custom_specification','created_at','updated_at','created_by','updated_by'],
+    proposals: ['NO','DIVISI','USULAN','KETERANGAN','KONFIRMASI','request_id'],
+    positionStatus: ['NO','KOTA','PROPERTI','AREA','NAMA/NOMOR LOKASI','KODE POSISI','STATUS','PETUGAS UPDATE','TANGGAL UPDATE','status_key']
   }
 };
 
@@ -19,6 +23,7 @@ function syncDcipToSheets() {
   try {
     const config = getConfig_();
     const spreadsheet = SpreadsheetApp.openById(config.spreadsheetId);
+    ensureSupportSheets_(spreadsheet);
     validateAllSheets_(spreadsheet);
     const stateSheet = getStateSheet_(spreadsheet);
     const previous = readSyncState_(stateSheet);
@@ -32,6 +37,15 @@ function syncDcipToSheets() {
     next['OPSI_MATERIAL'] = syncSheet_(
       spreadsheet, DCIP_SYNC.SHEETS.options, DCIP_SYNC.HEADERS.options,
       buildOptionRows_(db), row => row[0], previous['OPSI_MATERIAL'] || []
+    );
+
+    next[DCIP_SYNC.SHEETS.proposals] = syncSheet_(
+      spreadsheet, DCIP_SYNC.SHEETS.proposals, DCIP_SYNC.HEADERS.proposals,
+      buildProposalRows_(db), row => row[5], previous[DCIP_SYNC.SHEETS.proposals] || []
+    );
+    next[DCIP_SYNC.SHEETS.positionStatus] = syncSheet_(
+      spreadsheet, DCIP_SYNC.SHEETS.positionStatus, DCIP_SYNC.HEADERS.positionStatus,
+      buildPositionStatusRows_(db), row => row[9], previous[DCIP_SYNC.SHEETS.positionStatus] || []
     );
 
     Object.entries(DCIP_SYNC.SHEETS.inspection).forEach(([division, sheetName]) => {
@@ -49,16 +63,30 @@ function syncDcipToSheets() {
 }
 
 function setupDcipAutoSync() {
-  getConfig_();
+  const config = getConfig_();
+  const spreadsheet = SpreadsheetApp.openById(config.spreadsheetId);
+  ensureSupportSheets_(spreadsheet);
+  validateAllSheets_(spreadsheet);
   removeDcipAutoSync();
   ScriptApp.newTrigger('syncDcipToSheets').timeBased().everyMinutes(15).create();
-  console.log('Sinkron otomatis aktif setiap 15 menit.');
+  setupUsulanConfirmTrigger();
+  console.log('Sinkron otomatis aktif setiap 15 menit; konfirmasi usulan aktif.');
 }
 
 function removeDcipAutoSync() {
   ScriptApp.getProjectTriggers().forEach(trigger => {
     if (trigger.getHandlerFunction() === 'syncDcipToSheets') ScriptApp.deleteTrigger(trigger);
   });
+}
+
+function setupUsulanConfirmTrigger() {
+  const config = getConfig_();
+  const spreadsheet = SpreadsheetApp.openById(config.spreadsheetId);
+  ScriptApp.getProjectTriggers().forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'handleUsulanConfirmation') ScriptApp.deleteTrigger(trigger);
+  });
+  ScriptApp.newTrigger('handleUsulanConfirmation').forSpreadsheet(spreadsheet).onEdit().create();
+  console.log('Konfirmasi USULAN aktif.');
 }
 
 function getConfig_() {
@@ -78,7 +106,7 @@ function getConfig_() {
 }
 
 function loadDatabase_(config) {
-  const names = ['divisions','properties','areas','position_codes','locations','material_items','material_options','inspections','inspection_answers','user_profiles'];
+  const names = ['divisions','properties','areas','position_codes','locations','material_items','material_options','inspections','inspection_answers','user_profiles','location_position_status','catalog_requests'];
   const result = {};
   names.forEach(name => result[name] = fetchTable_(config, name));
   return result;
@@ -145,6 +173,33 @@ function buildMasterRows_(db) {
     rows.push(['LOKASI', row.id, row.name, row.property_id, row.area_id, '', locationOrder.get(group)]);
   });
   return rows;
+}
+
+function buildProposalRows_(db) {
+  const divisionById = new Map(db.divisions.map(row => [row.id, row]));
+  return db.catalog_requests.filter(row => row.status === 'DIAJUKAN')
+    .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
+    .map((row, index) => [index + 1, divisionById.get(row.division_id)?.name || row.division_id,
+      row.request_type, row.value, false, row.id]);
+}
+
+function buildPositionStatusRows_(db) {
+  const propertyById = new Map(db.properties.map(row => [row.id, row]));
+  const areaById = new Map(db.areas.map(row => [row.id, row]));
+  const positionById = new Map(db.position_codes.map(row => [row.id, row]));
+  const locationById = new Map(db.locations.map(row => [row.id, row]));
+  const profileById = new Map(db.user_profiles.map(row => [row.id, row]));
+  return db.location_position_status.slice()
+    .sort((a, b) => String(a.updated_at).localeCompare(String(b.updated_at)))
+    .map((row, index) => {
+      const location = locationById.get(row.location_id) || {};
+      const updater = profileById.get(row.updated_by) || {};
+      const key = row.location_id + '|' + row.position_id;
+      return [index + 1, '', propertyById.get(row.property_id)?.name || row.property_id,
+        areaById.get(location.area_id)?.name || location.area_id || '', location.name || '',
+        positionById.get(row.position_id)?.name || row.position_id, row.status,
+        updater.display_name || updater.username || row.updated_by || '', row.updated_at, key];
+    });
 }
 
 function buildOptionRows_(db) {
@@ -220,6 +275,8 @@ function syncSheet_(spreadsheet, sheetName, expectedHeaders, rows, keyFn, previo
 }
 
 function validateAllSheets_(spreadsheet) {
+  validateSheetHeaders_(spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.proposals), DCIP_SYNC.HEADERS.proposals, DCIP_SYNC.SHEETS.proposals);
+  validateSheetHeaders_(spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.positionStatus), DCIP_SYNC.HEADERS.positionStatus, DCIP_SYNC.SHEETS.positionStatus);
   validateSheetHeaders_(spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.master), DCIP_SYNC.HEADERS.master, DCIP_SYNC.SHEETS.master);
   validateSheetHeaders_(spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.options), DCIP_SYNC.HEADERS.options, DCIP_SYNC.SHEETS.options);
   Object.values(DCIP_SYNC.SHEETS.inspection).forEach(name =>
@@ -233,6 +290,96 @@ function validateSheetHeaders_(sheet, expectedHeaders, expectedName) {
   if (expectedHeaders.some((header, index) => currentHeaders[index] !== header)) {
     throw new Error('Header tab ' + name + ' tidak sesuai. Sinkronisasi dibatalkan sebelum data diubah.');
   }
+}
+
+
+function ensureSupportSheets_(spreadsheet) {
+  let proposals = spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.proposals);
+  if (!proposals) proposals = spreadsheet.insertSheet(DCIP_SYNC.SHEETS.proposals);
+  if (proposals.getMaxColumns() < 6) proposals.insertColumnsAfter(proposals.getMaxColumns(), 6 - proposals.getMaxColumns());
+  const visibleHeaders = ['NO','DIVISI','USULAN','KETERANGAN','KONFIRMASI'];
+  const current = proposals.getRange(1, 1, 1, 5).getDisplayValues()[0];
+  if (current.every(value => !value)) proposals.getRange(1, 1, 1, 5).setValues([visibleHeaders]);
+  else if (visibleHeaders.some((value, index) => current[index] !== value)) {
+    throw new Error('Header tab USULAN tidak sesuai. Pastikan kolom NO, DIVISI, USULAN, KETERANGAN, KONFIRMASI.');
+  }
+  const requestIdHeader = proposals.getRange(1, 6).getDisplayValue();
+  if (!requestIdHeader) proposals.getRange(1, 6).setValue('request_id');
+  else if (requestIdHeader !== 'request_id') throw new Error('Kolom tersembunyi F pada USULAN harus bernama request_id.');
+  proposals.hideColumns(6);
+  const checkbox = SpreadsheetApp.newDataValidation().requireCheckbox().setAllowInvalid(false)
+    .setHelpText('Centang setelah usulan mulai ditindaklanjuti.').build();
+  proposals.getRange(2, 5, Math.max(1, proposals.getMaxRows() - 1), 1).setDataValidation(checkbox);
+
+  let status = spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.positionStatus);
+  if (!status) status = spreadsheet.insertSheet(DCIP_SYNC.SHEETS.positionStatus);
+  if (status.getMaxColumns() < DCIP_SYNC.HEADERS.positionStatus.length) {
+    status.insertColumnsAfter(status.getMaxColumns(), DCIP_SYNC.HEADERS.positionStatus.length - status.getMaxColumns());
+  }
+  const statusHeaders = status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).getDisplayValues()[0];
+  if (statusHeaders.every(value => !value)) {
+    status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).setValues([DCIP_SYNC.HEADERS.positionStatus]);
+    status.setFrozenRows(1);
+  }
+  status.hideColumns(10);
+}
+
+function handleUsulanConfirmation(e) {
+  if (!e || !e.range) return;
+  const sheet = e.range.getSheet();
+  const row = e.range.getRow();
+  if (sheet.getName() !== DCIP_SYNC.SHEETS.proposals || row < 2 || e.range.getColumn() !== 5 ||
+      String(e.value).toUpperCase() !== 'TRUE') return;
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const requestId = String(sheet.getRange(row, 6).getDisplayValue() || '').trim();
+    if (!requestId) {
+      sheet.getRange(row, 5).setValue(false);
+      sheet.getParent().toast('ID usulan belum tersinkron. Jalankan sinkronisasi terlebih dahulu.', 'USULAN', 6);
+      return;
+    }
+    try {
+      patchUsulanStatus_(requestId, getConfig_());
+      sheet.deleteRow(row);
+      renumberUsulan_(sheet);
+      sheet.getParent().toast('Usulan ditandai diproses dan dihapus dari daftar aktif.', 'USULAN', 5);
+    } catch (err) {
+      sheet.getRange(row, 5).setValue(false);
+      sheet.getParent().toast('Konfirmasi gagal disimpan ke Supabase: ' + err.message, 'USULAN', 8);
+      throw err;
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function patchUsulanStatus_(requestId, config) {
+  const headers = {
+    apikey: config.secretKey,
+    'Content-Type': 'application/json',
+    Prefer: 'return=representation'
+  };
+  if (!config.secretKey.startsWith('sb_secret_')) headers.Authorization = 'Bearer ' + config.secretKey;
+  const url = config.supabaseUrl + '/rest/v1/catalog_requests?id=eq.' +
+    encodeURIComponent(requestId) + '&status=eq.DIAJUKAN';
+  const response = UrlFetchApp.fetch(url, {
+    method: 'patch',
+    headers,
+    payload: JSON.stringify({status: 'DIPROSES', handled_at: new Date().toISOString()}),
+    muteHttpExceptions: true
+  });
+  const code = response.getResponseCode();
+  if (code < 200 || code >= 300) {
+    throw new Error('Supabase (' + code + '): ' + response.getContentText().slice(0, 300));
+  }
+}
+
+function renumberUsulan_(sheet) {
+  const last = sheet.getLastRow();
+  if (last < 2) return;
+  sheet.getRange(2, 1, last - 1, 1)
+    .setValues(Array.from({length: last - 1}, (_, index) => [index + 1]));
 }
 
 function getStateSheet_(spreadsheet) {
