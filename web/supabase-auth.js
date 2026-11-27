@@ -25,16 +25,19 @@ export async function signInWithUsername(supabase, username, password) {
 }
 
 export async function createPetugasAccount(supabase, { username, displayName, password, propertyIds, divisionId, city }) {
-  const { data, error } = await supabase.functions.invoke('create-account', {
-    body: {
+  const data = await managePetugasAccount(supabase, {
       username: String(username ?? '').trim().toLowerCase(),
       display_name: String(displayName ?? '').trim(),
       password: String(password ?? ''),
       property_ids: propertyIds,
       division_id: divisionId,
       city,
-    },
   })
+  return data.user
+}
+
+export async function managePetugasAccount(supabase, body) {
+  const { data, error } = await supabase.functions.invoke('create-account', { body })
   if (error) {
     const response = error.context;
     const detail = response instanceof Response
@@ -42,5 +45,5 @@ export async function createPetugasAccount(supabase, { username, displayName, pa
       : null;
     throw new Error(detail?.error || 'Gagal menghubungi layanan pembuatan akun. Silakan coba lagi.');
   }
-  return data.user
+  return data
 }
