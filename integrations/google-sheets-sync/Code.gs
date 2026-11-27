@@ -13,15 +13,6 @@ const DCIP_SYNC = {
   }
 };
 
-function onOpen() {
-  SpreadsheetApp.getUi().createMenu('DCIP Sync')
-    .addItem('Sinkronkan sekarang', 'syncDcipToSheets')
-    .addSeparator()
-    .addItem('Aktifkan sinkron otomatis (15 menit)', 'setupDcipAutoSync')
-    .addItem('Matikan sinkron otomatis', 'removeDcipAutoSync')
-    .addToUi();
-}
-
 function syncDcipToSheets() {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
@@ -51,7 +42,7 @@ function syncDcipToSheets() {
     });
 
     writeSyncState_(stateSheet, next);
-    spreadsheet.toast('Sinkronisasi Supabase selesai.', 'DCIP Sync', 5);
+    console.log('Sinkronisasi Supabase selesai.');
   } finally {
     lock.releaseLock();
   }
@@ -61,7 +52,7 @@ function setupDcipAutoSync() {
   getConfig_();
   removeDcipAutoSync();
   ScriptApp.newTrigger('syncDcipToSheets').timeBased().everyMinutes(15).create();
-  SpreadsheetApp.getUi().alert('Sinkron otomatis aktif setiap 15 menit.');
+  console.log('Sinkron otomatis aktif setiap 15 menit.');
 }
 
 function removeDcipAutoSync() {
