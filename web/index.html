@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#1565c0">
 <meta name="color-scheme" content="light">
 <title>D'Paragon | Pendataan Lokasi</title>
@@ -48,6 +48,68 @@ select:required:invalid{color:#8a94a3}select option{color:var(--text)}
 #settings-dialog #property-city-form button { width: 100%; }
 @media (max-width: 350px) {
   #settings-dialog .settings-section { padding: 14px; }
+}
+
+/* Keep touch controls and modal forms usable on small and short screens. */
+.modal { box-sizing: border-box; overscroll-behavior: contain; }
+.modal-body { overflow-wrap: anywhere; }
+.modal-header > :first-child, .modal-actions > * { min-width: 0; }
+.modal-actions { flex-wrap: wrap; }
+:where(input, select, textarea, button) { scroll-margin-block: 72px 20px; }
+#account-data-list .settings-section > strong { flex: 1; min-width: 0; }
+#account-data-list .settings-section > button { flex: 0 0 auto; }
+
+@media (max-width: 640px) {
+  html, body, main, #app { background-color: #f1f5f9 !important; }
+  header { padding-block: calc(10px + env(safe-area-inset-top, 0px)) 10px; }
+  header .brand-copy { flex: 1; }
+  .header-row { gap: 8px; }
+  .brand { font-size: 19px; }
+  .subtitle { font-size: 13px; }
+  main { padding-top: 16px; }
+  h1 { font-size: 22px; }
+  .identity-panel, .checklist-panel, #settings-dialog .settings-section { background: #fff; }
+  .identity-panel { padding: 14px; }
+  .field { margin-bottom: 16px; }
+  input, select, textarea { font-size: 16px; }
+  .checklist-position-picker { padding: 14px 14px 0; }
+  .checklist-panel .item { padding: 16px 14px; }
+  .check-progress { padding-inline: 10px; border-radius: 8px; }
+  .check-top-actions { flex-wrap: nowrap; }
+  .position-chip, .master-delete, .small-button, .request-actions button { min-height: 44px; }
+  .master-delete { margin-top: 4px; }
+  .modal {
+    width: min(600px, calc(100% - 24px));
+    max-height: min(calc(100dvh - 24px), calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px));
+    margin: auto auto max(12px, env(safe-area-inset-bottom, 0px));
+    border-radius: 16px;
+  }
+  .modal-body { padding: 0 16px 16px; }
+  .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    align-items: center;
+    margin: 0 0 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+  }
+  .modal-header h2 { margin: 0; font-size: 18px; }
+  .modal-header > button { flex-shrink: 0; }
+  .modal-actions > button { flex: 1 1 110px; }
+  #property-picker .choice { margin-block: 6px; }
+}
+
+@media (max-width: 360px) {
+  .modal-body { padding-inline: 12px; }
+  .account-credential { flex-wrap: wrap; }
+  .account-credential strong { flex-basis: auto; }
+  .master-picker { gap: 6px; }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .check-progress, .modal-header { position: static; }
 }
 </style>
 </head><body>
