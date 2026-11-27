@@ -64,6 +64,8 @@ select:required:invalid{color:#8a94a3}select option{color:var(--text)}
 <input id="staff-id" name="username" autocomplete="off" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,31}" required></div>
 <div class="field"><label for="staff-password">Kata sandi</label>
 <input id="staff-password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="72" required></div>
+<div class="field"><label for="staff-division">Divisi</label><select id="staff-division" name="divisionId" required></select></div>
+<div class="field"><label for="staff-city">Kota</label><select id="staff-city" name="city" required></select></div>
 <fieldset id="property-picker"><legend>Akses properti</legend></fieldset>
 <p id="create-account-status" role="status" class="small" hidden></p><div class="modal-actions"><button type="button" class="secondary" data-close-dialog>Tutup</button><button type="submit">Buat Akun</button></div>
 </form>
@@ -368,20 +370,36 @@ settingsDialog.addEventListener('click', event => {
   if (!event.target.closest('#open-create-account')) return;
   createAccountForm.reset();
   showCreateAccountStatus('');
-  const picker = document.getElementById('property-picker');
-  picker.querySelectorAll('label, p').forEach(element => element.remove());
-  for (const property of props) {
-    const label = document.createElement('label');
-    label.className = 'choice';
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.name = 'property';
-    input.value = property.id;
-    label.append(input, [property.name, property.city].filter(Boolean).join(' · '));
-    picker.append(label);
+  const division = createAccountForm.elements.divisionId;
+  const city = createAccountForm.elements.city;
+  function setChoices(select, placeholder, choices) {
+    select.replaceChildren(new Option(placeholder, ''), ...choices.map(([id, label]) => new Option(label, id)));
   }
-  createAccountForm.querySelector('[type="submit"]').disabled = !props.length;
-  if (!props.length) showCreateAccountStatus('Tambahkan properti terlebih dahulu.');
+  setChoices(division, 'Pilih divisi', divisions.map(d => [d.id, d.name]));
+  function showProperties() {
+    const picker = document.getElementById('property-picker');
+    picker.querySelectorAll('label').forEach(label => label.remove());
+    const matching = city.value ? props.filter(p => (p.city || unassignedCity) === city.value) : [];
+    for (const property of matching) {
+      const label = document.createElement('label');
+      label.className = 'choice';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.name = 'property';
+      input.value = property.id;
+      label.append(input, property.name);
+      picker.append(label);
+    }
+    createAccountForm.querySelector('[type="submit"]').disabled = !matching.length;
+  }
+  function showCities() {
+    setChoices(city, 'Pilih kota', division.value ? cityChoices().map(c => [c, c === unassignedCity ? 'Belum ditetapkan' : c]) : []);
+    city.disabled = !division.value;
+    showProperties();
+  }
+  division.onchange = showCities;
+  city.onchange = showProperties;
+  showCities();
   createAccountDialog.showModal();
 });
 createAccountDialog.addEventListener('click', event => {
@@ -408,7 +426,9 @@ createAccountForm.addEventListener('submit', async event => {
       displayName: fields.get('displayName'),
       username: fields.get('username'),
       password: fields.get('password'),
-      propertyIds
+      propertyIds,
+      divisionId: fields.get('divisionId'),
+      city: fields.get('city')
     });
     createAccountForm.reset();
     showCreateAccountStatus('Akun ' + user.username + ' berhasil dibuat.');
@@ -570,6 +590,7 @@ async function initializeApp(){locationPositionStatuses=[];catalogRequests=[];tr
 const rmisLive = true;
 let rmisMaster = [], rmisCatalog = [];
 let dcipApi;
+let activeProfile;
 const rmisCall = (name, ...args) => dcipApi[name](...args);
 const rmisType = type => rmisMaster.filter(r => r.master_type === type);
 const rmisFind = (type, id) => rmisType(type).find(r => r.master_id === id);
@@ -592,7 +613,17 @@ if (rmisLive) {
   loadMasterData = async function () {
     ({master:rmisMaster, katalog:rmisCatalog} = await rmisCall('rmisMuat'));
     divisions = rmisType('DIVISI').map(r => ({id:r.master_id, name:r.name}));
+    if (activeProfile?.role !== 'admin' && activeProfile?.division_id) {
+      divisions = divisions.filter(d => d.id === activeProfile.division_id);
+      s.division = divisions[0]?.id || '';
+    }
     props = rmisType('PROPERTI').map(r => ({id:r.master_id, name:r.name, city:r.city}));
+    if (activeProfile?.role !== 'admin') {
+      const cities = cityChoices();
+      if (cities.length === 1) s.city = cities[0];
+      const accessible = props.filter(p => (p.city || unassignedCity) === s.city);
+      if (accessible.length === 1) s.property = accessible[0].id;
+    }
     areaPositions = rmisType('AREA').map(r => r.name);
     positionCodes = rmisType('KODE_POSISI').map(r => r.name);
     locations = rmisType('LOKASI').map(r => {
@@ -721,6 +752,7 @@ async function startAuthenticatedApp() {
   dcipApi = await createDcipApi();
   async function showSession() {
     const profile = await dcipApi.currentProfile();
+    activeProfile = profile;
     authApp.classList.toggle('hidden', !!profile);
     app.classList.toggle('hidden', !profile);
     settingsButton.classList.toggle('hidden', !profile || profile.role !== 'admin');
