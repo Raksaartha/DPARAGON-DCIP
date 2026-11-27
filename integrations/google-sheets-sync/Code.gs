@@ -9,7 +9,7 @@ const DCIP_SYNC = {
     positionStatus: 'STATUS POSISI'
   },
   HEADERS: {
-    master: ['master_type','master_id','name','parent_property_id','parent_area_id','target_sheet','display_order'],
+    master: ['master_type','master_id','name','parent_property_id','parent_area_id','target_sheet','display_order','city'],
     options: ['option_id','division_code','position_code_id','item_order','item_id','item_name','option_order','option_value','option_type','source'],
     details: ['inspection_detail_id','inspection_id','location_id','property_id','area_id','location_name','position_code_id','item_id','item_name','option_id','option_value','custom_specification','created_at','updated_at','created_by','updated_by'],
     proposals: ['NO','DIVISI','USULAN','KETERANGAN','KONFIRMASI','request_id'],
@@ -151,7 +151,7 @@ function buildMasterRows_(db) {
     });
     sorted.forEach((record, index) => {
       const extra = getFields(record);
-      rows.push([type, record.id, getName(record), extra[0] || '', extra[1] || '', extra[2] || '', index + 1]);
+      rows.push([type, record.id, getName(record), extra[0] || '', extra[1] || '', extra[2] || '', index + 1, type === 'PROPERTI' ? record.city || '' : '']);
     });
   };
 
@@ -170,7 +170,7 @@ function buildMasterRows_(db) {
   locations.forEach(row => {
     const group = row.property_id + '|' + row.area_id;
     locationOrder.set(group, (locationOrder.get(group) || 0) + 1);
-    rows.push(['LOKASI', row.id, row.name, row.property_id, row.area_id, '', locationOrder.get(group)]);
+    rows.push(['LOKASI', row.id, row.name, row.property_id, row.area_id, '', locationOrder.get(group), '']);
   });
   return rows;
 }
@@ -195,7 +195,7 @@ function buildPositionStatusRows_(db) {
       const location = locationById.get(row.location_id) || {};
       const updater = profileById.get(row.updated_by) || {};
       const key = row.location_id + '|' + row.position_id;
-      return [index + 1, '', propertyById.get(row.property_id)?.name || row.property_id,
+      return [index + 1, propertyById.get(row.property_id)?.city || '', propertyById.get(row.property_id)?.name || row.property_id,
         areaById.get(location.area_id)?.name || location.area_id || '', location.name || '',
         positionById.get(row.position_id)?.name || row.position_id, row.status,
         updater.display_name || updater.username || row.updated_by || '', row.updated_at ? new Date(row.updated_at) : '', key];
@@ -297,6 +297,12 @@ function validateSheetHeaders_(sheet, expectedHeaders, expectedName) {
 
 
 function ensureSupportSheets_(spreadsheet) {
+  const master = spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.master);
+  if (master && master.getMaxColumns() >= 8 && !master.getRange('H1').getValue()) master.getRange('H1').setValue('city');
+  if (master && master.getMaxColumns() === 7) {
+    master.insertColumnsAfter(7, 1);
+    master.getRange('H1').setValue('city');
+  }
   let proposals = spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.proposals);
   if (!proposals) proposals = spreadsheet.insertSheet(DCIP_SYNC.SHEETS.proposals);
   if (proposals.getMaxColumns() < 6) proposals.insertColumnsAfter(proposals.getMaxColumns(), 6 - proposals.getMaxColumns());
@@ -329,6 +335,7 @@ function ensureSupportSheets_(spreadsheet) {
   }
   const statusHeaders = status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).getDisplayValues()[0];
   if (statusHeaders.every(value => !value)) status.getRange(1, 1, 1, DCIP_SYNC.HEADERS.positionStatus.length).setValues([DCIP_SYNC.HEADERS.positionStatus]);
+  if (!status.getRange('J1').getValue()) status.getRange('J1').setValue('status_key');
   status.setFrozenRows(1);
   status.getRange(1, 1, 1, 9).setBackground('#142f51').setFontColor('#ffffff')
     .setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
