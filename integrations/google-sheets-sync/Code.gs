@@ -244,7 +244,7 @@ function syncSheet_(spreadsheet, sheetName, expectedHeaders, rows, keyFn, previo
   if (!sheet) throw new Error('Tab ' + sheetName + ' tidak ditemukan.');
   validateSheetHeaders_(sheet, expectedHeaders);
 
-  const lastRow = sheet.getLastRow();
+  const lastRow = sheetName === DCIP_SYNC.SHEETS.proposals ? getUsulanContentLastRow_(sheet) : sheet.getLastRow();
   const existing = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, expectedHeaders.length).getValues() : [];
   const current = new Map(rows.map(row => [keyFn(row), row]));
   const rowIndexes = new Map();
@@ -255,11 +255,14 @@ function syncSheet_(spreadsheet, sheetName, expectedHeaders, rows, keyFn, previo
 
   current.forEach((row, key) => {
     const rowNumber = rowIndexes.get(key);
-    if (rowNumber) sheet.getRange(rowNumber, 1, 1, expectedHeaders.length).setValues([row]);
-    else {
-      const appendAt = sheet.getLastRow() + 1;
+    if (rowNumber) {
+      sheet.getRange(rowNumber, 1, 1, expectedHeaders.length).setValues([row]);
+      if (sheetName === DCIP_SYNC.SHEETS.proposals) ensureUsulanCheckbox_(sheet, rowNumber);
+    } else {
+      const appendAt = (sheetName === DCIP_SYNC.SHEETS.proposals ? getUsulanContentLastRow_(sheet) : sheet.getLastRow()) + 1;
       ensureRowCapacity_(sheet, appendAt);
       sheet.getRange(appendAt, 1, 1, expectedHeaders.length).setValues([row]);
+      if (sheetName === DCIP_SYNC.SHEETS.proposals) ensureUsulanCheckbox_(sheet, appendAt);
     }
   });
 
@@ -307,9 +310,16 @@ function ensureSupportSheets_(spreadsheet) {
   if (!requestIdHeader) proposals.getRange(1, 6).setValue('request_id');
   else if (requestIdHeader !== 'request_id') throw new Error('Kolom tersembunyi F pada USULAN harus bernama request_id.');
   proposals.hideColumns(6);
+  const contentLastRow = getUsulanContentLastRow_(proposals);
   const checkbox = SpreadsheetApp.newDataValidation().requireCheckbox().setAllowInvalid(false)
     .setHelpText('Centang setelah usulan mulai ditindaklanjuti.').build();
-  proposals.getRange(2, 5, Math.max(1, proposals.getMaxRows() - 1), 1).setDataValidation(checkbox);
+  proposals.getRange(2, 5, Math.max(1, contentLastRow - 1), 1).setDataValidation(checkbox);
+  const unusedStartRow = contentLastRow + 1;
+  if (unusedStartRow <= proposals.getMaxRows()) {
+    const unusedCheckboxes = proposals.getRange(unusedStartRow, 5, proposals.getMaxRows() - unusedStartRow + 1, 1);
+    unusedCheckboxes.clearDataValidations();
+    unusedCheckboxes.clearContent();
+  }
   proposals.getRange(2, 6, Math.max(1, proposals.getMaxRows() - 1), 1).clearDataValidations();
 
   let status = spreadsheet.getSheetByName(DCIP_SYNC.SHEETS.positionStatus);
@@ -325,6 +335,28 @@ function ensureSupportSheets_(spreadsheet) {
   status.hideColumns(10);
 }
 
+function getUsulanContentLastRow_(sheet) {
+  const maxRows = sheet.getMaxRows();
+  if (maxRows < 2) return 1;
+  const rows = sheet.getRange(2, 1, maxRows - 1, 6).getValues();
+  for (let index = rows.length - 1; index >= 0; index--) {
+    const row = rows[index];
+    const visibleData = row.slice(0, 4).some(value => value !== '' && value !== null && typeof value !== 'boolean');
+    if (visibleData || isUuid_(row[5])) return index + 2;
+  }
+  return 1;
+}
+
+function isUuid_(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+}
+
+function ensureUsulanCheckbox_(sheet, row) {
+  const checkbox = SpreadsheetApp.newDataValidation().requireCheckbox().setAllowInvalid(false)
+    .setHelpText('Centang setelah usulan mulai ditindaklanjuti.').build();
+  sheet.getRange(row, 5).setDataValidation(checkbox);
+}
+
 function handleUsulanConfirmation(e) {
   if (!e || !e.range) return;
   const sheet = e.range.getSheet();
@@ -335,7 +367,7 @@ function handleUsulanConfirmation(e) {
   lock.waitLock(30000);
   try {
     const requestId = String(sheet.getRange(row, 6).getDisplayValue() || '').trim();
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
+    if (!isUuid_(requestId)) {
       sheet.getRange(row, 5).setValue(false);
       sheet.getParent().toast('Baris contoh/manual tanpa ID database tidak dapat dikonfirmasi.', 'USULAN', 6);
       return;
@@ -377,10 +409,11 @@ function patchUsulanStatus_(requestId, config) {
 }
 
 function renumberUsulan_(sheet) {
-  const last = sheet.getLastRow();
+  const last = getUsulanContentLastRow_(sheet);
   if (last < 2) return;
-  sheet.getRange(2, 1, last - 1, 1)
-    .setValues(Array.from({length: last - 1}, (_, index) => [index + 1]));
+  const rows = sheet.getRange(2, 1, last - 1, 6).getValues();
+  let number = 0;
+  sheet.getRange(2, 1, last - 1, 1).setValues(rows.map(row => [isUuid_(row[5]) ? ++number : row[0]]));
 }
 
 function getStateSheet_(spreadsheet) {
