@@ -4,7 +4,7 @@ const DCIP_SYNC = {
   SHEETS: {
     master: 'MASTER DATA',
     options: 'OPSI_MATERIAL',
-    inspection: {TEKNIS: 'TEKNIS', INVENTORY: 'INVENTORY', RD: 'RD'},
+    inspection: {TEKNIS: 'DATA_TEKNIS', INVENTORY: 'DATA_INVENTORY', RD: 'DATA_RD'},
     proposals: 'USULAN',
     positionStatus: 'STATUS POSISI'
   },
@@ -333,6 +333,20 @@ function ensureSupportSheets_(spreadsheet) {
   status.getRange(1, 1, 1, 9).setBackground('#142f51').setFontColor('#ffffff')
     .setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
   status.hideColumns(10);
+
+  Object.values(DCIP_SYNC.SHEETS.inspection).forEach(name => {
+    let raw = spreadsheet.getSheetByName(name);
+    if (!raw) raw = spreadsheet.insertSheet(name);
+    if (raw.getMaxColumns() < DCIP_SYNC.HEADERS.details.length) {
+      raw.insertColumnsAfter(raw.getMaxColumns(), DCIP_SYNC.HEADERS.details.length - raw.getMaxColumns());
+    }
+    const headers = raw.getRange(1, 1, 1, DCIP_SYNC.HEADERS.details.length).getDisplayValues()[0];
+    if (headers.every(value => !value)) {
+      raw.getRange(1, 1, 1, DCIP_SYNC.HEADERS.details.length).setValues([DCIP_SYNC.HEADERS.details]);
+    }
+    raw.setFrozenRows(1);
+    raw.hideSheet();
+  });
 }
 
 function getUsulanContentLastRow_(sheet) {
