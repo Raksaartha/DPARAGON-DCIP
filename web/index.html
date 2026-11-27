@@ -111,10 +111,13 @@ select:required:invalid{color:#8a94a3}select option{color:var(--text)}
 @media (max-height: 480px) and (orientation: landscape) {
   .check-progress, .modal-header { position: static; }
 }
+.password-toggle{display:grid;place-items:center;flex:0 0 48px;width:48px;padding:0}
+.password-toggle .password-slash{display:none}
+.password-toggle[data-visible] .password-slash{display:block}
 </style>
 </head><body>
 <header><div class="inner header-row"><div class="brand-copy"><div class="brand">D'PARAGON</div><div class="subtitle">Room Material Inspection</div></div><button type="button" class="settings-button hidden" id="open-settings" aria-label="Pengaturan master data" title="Pengaturan">⚙</button><button type="button" class="settings-button hidden" id="logout" aria-label="Keluar" title="Keluar">↪</button></div></header>
-<main id="auth-app" class="hidden"><section class="identity-panel"><h1>Masuk DPARAGON DCIP</h1><form id="login-form"><div class="field"><label for="login-id">ID pengguna</label><input id="login-id" name="username" autocomplete="username" required></div><div class="field"><label for="login-password">Kata sandi</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div><p id="login-error" class="error" role="alert"></p><button class="full">Masuk</button></form></section></main>
+<main id="auth-app" class="hidden"><section class="identity-panel"><h1>Masuk DPARAGON DCIP</h1><form id="login-form"><div class="field"><label for="login-id">ID pengguna</label><input id="login-id" name="username" autocomplete="username" required></div><div class="field"><label for="login-password">Kata sandi</label><div class="location-control"><input id="login-password" name="password" type="password" autocomplete="current-password" required><button type="button" class="secondary password-toggle" id="toggle-login-password" aria-controls="login-password" aria-label="Tampilkan kata sandi" title="Tampilkan kata sandi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/><path class="password-slash" d="M3 3l18 18"/></svg></button></div></div><p id="login-error" class="error" role="alert"></p><button class="full">Masuk</button></form></section></main>
 <main id="app" class="hidden"></main>
 <dialog id="create-account-dialog" class="modal" aria-labelledby="create-account-title">
   <div class="modal-body">
@@ -1109,6 +1112,16 @@ async function startAuthenticatedApp() {
     document.getElementById('logout').classList.toggle('hidden', !profile);
     if (profile) await initializeApp();
   }
+  const passwordToggle = document.getElementById('toggle-login-password');
+  const loginPassword = document.getElementById('login-password');
+  function setLoginPasswordVisible(visible) {
+    loginPassword.type = visible ? 'text' : 'password';
+    const label = visible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi';
+    passwordToggle.toggleAttribute('data-visible', visible);
+    passwordToggle.setAttribute('aria-label', label);
+    passwordToggle.title = label;
+  }
+  passwordToggle.addEventListener('click', () => setLoginPasswordVisible(loginPassword.type === 'password'));
   document.getElementById('login-form').addEventListener('submit', async event => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -1118,6 +1131,7 @@ async function startAuthenticatedApp() {
     try {
       await dcipApi.signIn(form.username.value, form.password.value);
       form.password.value = '';
+      setLoginPasswordVisible(false);
       await showSession();
     } catch (error) {
       document.getElementById('login-error').textContent = error.message;
