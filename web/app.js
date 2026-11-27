@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.95.0'
 import { signInWithUsername } from './supabase-auth.js'
 
 const url = 'https://bzbjnuqjfavccsdbnpdr.supabase.co'
