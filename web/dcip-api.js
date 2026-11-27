@@ -44,6 +44,10 @@ export async function createDcipApi() {
       return checked(await supabase.from('user_profiles')
         .select('id,username,display_name,role,division_id').eq('id', user.id).single())
     },
+    async retireChecklistComponent(scope) {
+      return checked(await supabase.from('material_items').update({ retired: true })
+        .match(scope).eq('retired', false).select('id').single())
+    },
     async changeMaterialOption(scope, value, removeId) {
       const matches = catalog.filter(row => row.division_code === scope.division_id &&
         row.position_code_id === scope.position_id && row.item_id === scope.item_id)
@@ -90,6 +94,7 @@ export async function createDcipApi() {
           item_order: item?.display_order || 1,
           option_id: option.id,
           retired: option.retired === true,
+          item_retired: item?.retired === true,
           option_type: option.option_type,
           option_value: option.value,
           option_order: option.display_order
