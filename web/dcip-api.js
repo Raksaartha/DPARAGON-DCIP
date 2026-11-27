@@ -1,5 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.95.0'
 
+import { createPetugasAccount } from './supabase-auth.js'
+
 const supabase = createClient(
   'https://bzbjnuqjfavccsdbnpdr.supabase.co',
   'sb_publishable_lUFNmyhRFWj448iCtioUag_L7lDC3LI'
@@ -18,6 +20,9 @@ export async function createDcipApi() {
   let master = []
 
   return {
+    async createStaffAccount(input) {
+      return createPetugasAccount(supabase, input)
+    },
     async signOut() {
       checked(await supabase.auth.signOut())
     },
