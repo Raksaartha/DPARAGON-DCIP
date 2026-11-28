@@ -52,6 +52,11 @@ export async function createDcipApi() {
       return checked(await supabase.from('user_profiles')
         .select('id,username,display_name,role,division_id').eq('id', user.id).single())
     },
+    async addChecklistComponent(divisionId, positionId, name) {
+      return checked(await supabase.rpc('add_checklist_component', {
+        p_division_id: divisionId, p_position_id: positionId, p_name: name
+      }))
+    },
     async retireChecklistComponent(scope) {
       return checked(await supabase.from('material_items').update({ retired: true })
         .match(scope).eq('retired', false).select('id').single())
