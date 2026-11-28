@@ -15,6 +15,18 @@ function checked(result) {
   return result.data
 }
 
+async function readPages(makeQuery, columns) {
+  const size = 500;
+  const rows = [];
+  for (let start = 0; ; start += size) {
+    let query = makeQuery();
+    for (const column of columns) query = query.order(column);
+    const page = checked(await query.range(start, start + size - 1));
+    rows.push(...page);
+    if (page.length < size) return rows;
+  }
+}
+
 export async function createDcipApi() {
   let catalog = []
   let master = []
@@ -79,8 +91,12 @@ export async function createDcipApi() {
     },
     async rmisMuat() {
       const tables = ['divisions', 'properties', 'areas', 'position_codes', 'division_position_codes', 'locations', 'material_items', 'material_options']
-      const values = await Promise.all(tables.map(table => supabase.from(table).select('*')))
-      const data = Object.fromEntries(tables.map((table, index) => [table, checked(values[index])]))
+      const values = await Promise.all(tables.map(table => readPages(
+        () => supabase.from(table).select('*'),
+        table === 'division_position_codes' ? ['division_id', 'position_id'] :
+          table === 'material_items' ? ['division_id', 'position_id', 'id'] : ['id']
+      )))
+      const data = Object.fromEntries(tables.map((table, index) => [table, values[index]]))
       const rows = (type, source) => source.map(row => ({
         master_type: type, master_id: row.id, name: row.name, city: row.city || null
       }))
@@ -116,12 +132,18 @@ export async function createDcipApi() {
       return {master, katalog: catalog, divisionPositions: data.division_position_codes}
     },
     async rmisBacaInspeksi(divisionId, locationId) {
-      let query = supabase.from('inspections').select('*').eq('division_id', divisionId)
-      if (locationId) query = query.eq('location_id', locationId)
-      const inspections = checked(await query)
-      if (!inspections.length) return []
-      const answers = checked(await supabase.from('inspection_answers').select('*')
-        .in('inspection_id', inspections.map(row => row.id)))
+      const inspections = await readPages(() => {
+        const query = supabase.from('inspections').select('*').eq('division_id', divisionId);
+        return locationId ? query.eq('location_id', locationId) : query;
+      }, ['id']);
+      const answers = [];
+      for (let start = 0; start < inspections.length; start += 50) {
+        const ids = inspections.slice(start, start + 50).map(row => row.id);
+        answers.push(...await readPages(
+          () => supabase.from('inspection_answers').select('*').in('inspection_id', ids),
+          ['inspection_id', 'item_id']
+        ));
+      }
       const locationById = new Map(master.filter(row => row.master_type === 'LOKASI')
         .map(row => [row.master_id, row]))
       const inspectionById = new Map(inspections.map(row => [row.id, row]))
