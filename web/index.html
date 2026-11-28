@@ -158,7 +158,7 @@ select:required:invalid{color:#8a94a3}select option{color:var(--text)}
     <form id="account-edit-form">
       <div class="field"><label for="account-edit-name">Nama petugas</label><input id="account-edit-name" name="displayName" required minlength="2" maxlength="80"></div>
       <div class="field"><label for="account-edit-division">Divisi</label><select id="account-edit-division" name="divisionId" required></select></div>
-      <p id="account-edit-status" role="status" class="small"></p>
+      <fieldset id="account-edit-properties"><legend>Akses properti</legend></fieldset><p id="account-edit-status" role="status" class="small"></p>
       <div class="modal-actions"><button type="submit">Simpan</button><button type="button" class="danger-button" id="delete-account">Hapus</button></div>
     </form>
   </div>
@@ -393,7 +393,7 @@ if(s.page==='home'){
   html+=title('Pendataan Lokasi')+`<p class="muted">Pilih divisi, kota, properti, area, dan nama atau nomor lokasi.</p>${proposalNotice?`<p class="modal-notice" role="status">${esc(proposalNotice)}</p>`:''}<section class="identity-panel"><div class="field"><label for="division">Divisi</label><select id="division" required ${isDivisionAdmin()?'disabled':''}><option value="" disabled ${s.division?'':'selected'} hidden>Pilih divisi</option>${divisions.map(d=>`<option value="${esc(d.id)}" ${d.id===s.division?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div><div class="field"><label for="city">Kota</label><select id="city" ${!getDivision()?'disabled':''} required><option value="" disabled ${s.city?'':'selected'} hidden>Pilih kota</option>${cityChoices().map(c=>`<option value="${esc(c)}" ${c===s.city?'selected':''}>${esc(c===unassignedCity?'Belum ditetapkan':c)}</option>`).join('')}</select></div><div class="field"><label for="property">Properti</label><select id="property" required ${s.city?'':'disabled'}><option value="" disabled ${s.property?'':'selected'} hidden>Pilih properti</option>${props.filter(p=>(p.city||unassignedCity)===s.city).map(p=>`<option value="${esc(p.id)}" ${p.id===s.property?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div><div class="field"><label for="area-position">Area</label><select id="area-position" required><option value="" disabled ${s.areaPosition?'':'selected'} hidden>Pilih area</option>${areaPositions.map(x=>`<option value="${esc(x)}" ${x===s.areaPosition?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="field"><label for="room">Nama / Nomor Lokasi</label><div class="location-control"><select id="room" required ${!prop()||!s.areaPosition||!availableLocations.length?'disabled':''}><option value="" disabled ${s.room?'':'selected'} hidden>${!prop()||!s.areaPosition?'Pilih properti dan area':availableLocations.length?'Pilih nama / nomor lokasi':'Belum ada lokasi; tekan + untuk menambahkan'}</option>${availableLocations.map(x=>`<option value="${esc(x.name)}" ${x.name===s.room?'selected':''}>${esc(x.name)}</option>`).join('')}</select><button type="button" class="secondary plus-button" data-act="add-location" ${isDivisionAdmin()?'hidden style="display:none"':''} aria-label="Tambah nama atau nomor lokasi" title="Tambah lokasi" ${!prop()||!s.areaPosition?'disabled':''}>+</button></div></div>${positionCodes.length?'':'<p class="error small" role="alert">Tambahkan Kode Posisi melalui Pengaturan sebelum memulai.</p>'}<button class="full" data-act="start" ${!getDivision()||!prop()||!s.areaPosition||!s.room.trim()||!positionCodes.length?'disabled':''}>Mulai pendataan</button></section><div class="actions"><button class="secondary" data-act="history">Riwayat pendataan</button><button class="secondary" data-act="request" ${!getDivision()?'disabled':''}>Ajukan usulan</button></div>`;
 }if(s.page==='check'){
   const positionField=positionSelector();
-  html+=`<div class="actions check-top-actions"><button class="secondary" data-act="back">← Kembali</button><button class="danger-button" data-act="delete-location" ${isDivisionAdmin()?'hidden':''} aria-label="Hapus lokasi beserta checklist tersimpan" ${checking||deletingLocation?'disabled':''}>${deletingLocation?'Menghapus...':'Hapus'}</button></div><section class="identity-panel check-identity-panel"><div class="check-location-header">`+title(locationDisplayName(s.room,s.areaPosition).toLocaleUpperCase('id-ID'))+`<p class="muted">Divisi ${esc(getDivision()?.name||"")} · ${esc(prop().name)} · Area ${esc(s.areaPosition)}</p></div>${locationDeleteError?`<p class="error" role="alert">${esc(locationDeleteError)}</p>`:''}${savedPositionPanel()}</section>${positionNotice?`<p class="${positionNotice.startsWith('Gagal')?'error':'good'} small" role="status">${esc(positionNotice)}</p>`:''}${proposalNotice?`<p class="modal-notice" role="status">${esc(proposalNotice)}</p>`:''}${positionStatus()}<button type="button" class="secondary full request-entry-button" data-act="request">Ajukan usulan katalog</button>`;
+  html+=`<div class="actions check-top-actions"><button class="secondary" data-act="back">← Kembali</button><button class="danger-button" data-act="delete-location" ${activeProfile?.role === 'admin'?'':'hidden'} aria-label="Hapus lokasi beserta checklist tersimpan" ${checking||deletingLocation?'disabled':''}>${deletingLocation?'Menghapus...':'Hapus'}</button></div><section class="identity-panel check-identity-panel"><div class="check-location-header">`+title(locationDisplayName(s.room,s.areaPosition).toLocaleUpperCase('id-ID'))+`<p class="muted">Divisi ${esc(getDivision()?.name||"")} · ${esc(prop().name)} · Area ${esc(s.areaPosition)}</p></div>${locationDeleteError?`<p class="error" role="alert">${esc(locationDeleteError)}</p>`:''}${savedPositionPanel()}</section>${positionNotice?`<p class="${positionNotice.startsWith('Gagal')?'error':'good'} small" role="status">${esc(positionNotice)}</p>`:''}${proposalNotice?`<p class="modal-notice" role="status">${esc(proposalNotice)}</p>`:''}${positionStatus()}<button type="button" class="secondary full request-entry-button" data-act="request">Ajukan usulan katalog</button>`;
   if(canInput()){
      html+=(all.length ? progress() : '<p class="muted">Belum ada komponen. Tambahkan melalui menu Pilih Komponen.</p>')+`<section class="checklist-panel" aria-label="Checklist material">`+(positionField?`<div class="checklist-position-picker">${positionField}</div>`:'')+`<div class="checklist-position-picker between"><strong>Pilih Komponen</strong><button type="button" class="secondary plus-button" data-act="pick-component" aria-label="Pilih komponen" aria-haspopup="dialog">+</button></div>`+groups.map((g,i)=>`<section id="group-${i}" class="checklist-group">${s.position==="FASUM"?`<h2>${esc(g.name)}</h2>`:""}${g.items.map(([id,name,opts])=>item(id,name,opts)).join('')}</section>`).join('')+`</section>${count()!==all.length?'<p class="muted small" id="save-completion-hint">Lengkapi seluruh komponen untuk mengaktifkan tombol Simpan.</p>':''}<button class="full" data-act="save" ${!all.length||count()!==all.length||!canInput()||saving?'disabled':''}>Simpan</button>`;
   }else if(!checking&&!storageError&&!editingRecordKey&&!availablePositionCodes().length){
@@ -610,7 +610,28 @@ function addAccountRow(account) {
     division.replaceChildren(new Option('Pilih divisi', ''));
     for (const item of divisions) division.add(new Option(item.name, item.id));
     division.value = account.division_id || '';
+    const picker = document.getElementById('account-edit-properties');
+    picker.querySelectorAll('label,p').forEach(node => node.remove());
     accountEditDialog.showModal();
+    runAccountDataAction(accountEditStatus, async () => {
+      const save = accountEditForm.querySelector('[type="submit"]');
+      save.disabled = true;
+      accountEditStatus.textContent = 'Memuat akses properti…';
+      const { property_ids } = await dcipApi.manageStaffAccount({ action: 'access', id: account.id });
+      for (const property of props) {
+        const label = document.createElement('label');
+        label.className = 'choice';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'property';
+        input.value = property.id;
+        input.checked = property_ids.includes(property.id);
+        label.append(input, property.city ? property.city + ' · ' + property.name : property.name);
+        picker.append(label);
+      }
+      accountEditStatus.textContent = props.length ? '' : 'Belum ada properti. Tambahkan properti dari akun Admin Utama.';
+      save.disabled = false;
+    });
   });
   row.append(username, edit);
   accountDataList.append(row);
@@ -661,10 +682,12 @@ accountEditForm.addEventListener('submit', event => {
   const { account } = selectedAccount;
   const displayName = accountEditForm.elements.displayName.value.trim();
   const divisionId = accountEditForm.elements.divisionId.value;
+  const propertyIds = new FormData(accountEditForm).getAll('property');
+  if (!propertyIds.length && props.length && !confirm('Simpan akun tanpa akses properti?')) return;
   runAccountDataAction(accountEditStatus, async () => {
     accountEditStatus.textContent = 'Menyimpan perubahan…';
     await dcipApi.manageStaffAccount({
-      action: 'edit', id: account.id, display_name: displayName, division_id: divisionId,
+      action: 'edit', id: account.id, display_name: displayName, division_id: divisionId, property_ids: propertyIds,
     });
     account.display_name = displayName;
     account.division_id = divisionId;
@@ -949,7 +972,7 @@ root.addEventListener('click',e=>{
       s.room=s.room.trim();const available=availablePositionCodes();s.position=available.includes(s.position)?s.position:(available[0]||'');editingRecordKey='';positionNotice='';s.cat=0;s.data={};s.note='';go('check');syncHistory();break;
     }
     case 'back':if(confirm('Kembali ke pemilihan lokasi? Checklist posisi sebelumnya akan dipertahankan sampai Anda memulai pendataan baru.')){editingRecordKey='';positionNotice='';go('home');}break;
-    case 'delete-location':if(!isDivisionAdmin())deleteCurrentLocation();break;
+    case 'delete-location':if(activeProfile?.role === 'admin')deleteCurrentLocation();break;
     case 'save':saveOnce(b);break;
     case 'retry':syncHistory();break;
     case 'another':s.areaPosition='';s.room='';s.position='';s.data={};s.note='';editingRecordKey='';positionNotice='';go('home');break;
@@ -1129,7 +1152,7 @@ async function startAuthenticatedApp() {
   const authApp = document.getElementById('auth-app');
   const app = document.getElementById('app');
   const settingsButton = document.getElementById('open-settings');
-  const {createDcipApi} = await import('./dcip-api.js?v=component-direct');
+  const {createDcipApi} = await import('./dcip-api.js?v=audit-pagination');
   dcipApi = await createDcipApi();
   async function showSession() {
     const profile = await dcipApi.currentProfile();
