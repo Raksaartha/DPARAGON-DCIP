@@ -83,7 +83,7 @@ Deno.serve(async (req: Request) => {
     return respond(200, { accounts: data })
   }
 
-  if (body.action === 'edit' || body.action === 'delete') {
+  if (body.action === 'edit' || body.action === 'delete' || body.action === 'access') {
     const id = String(body.id ?? '')
     if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)) {
       return respond(400, { error: 'ID akun tidak valid.' })
@@ -93,6 +93,11 @@ Deno.serve(async (req: Request) => {
     if (lookupError) return respond(500, { error: 'Akun gagal diperiksa.' })
     if (!account || (scope && account.division_id !== scope)) return respond(404, { error: 'Akun petugas tidak ditemukan.' })
 
+    if (body.action === 'access') {
+      const { data, error } = await admin.from('property_memberships').select('property_id').eq('user_id', id)
+      if (error) return respond(500, { error: 'Akses properti gagal dimuat.' })
+      return respond(200, { property_ids: data.map(row => row.property_id) })
+    }
     if (body.action === 'delete') {
       const { error } = await admin.auth.admin.deleteUser(id)
       if (error) return respond(500, { error: 'Akun gagal dihapus.' })
@@ -108,11 +113,19 @@ Deno.serve(async (req: Request) => {
     const { data: division, error: divisionError } = await admin.from('divisions')
       .select('id').eq('id', divisionId).maybeSingle()
     if (divisionError || !division) return respond(400, { error: 'Pilih divisi yang valid.' })
-    const { data: updated, error } = await admin.from('user_profiles')
-      .update({ display_name: displayName, division_id: divisionId })
-      .eq('id', id).eq('role', 'petugas').select('id').maybeSingle()
-    if (error) return respond(500, { error: 'Perubahan akun gagal disimpan.' })
-    if (!updated) return respond(404, { error: 'Akun petugas tidak ditemukan.' })
+    let propertyIds = body.property_ids
+    if (propertyIds === undefined) {
+      const { data, error } = await admin.from('property_memberships').select('property_id').eq('user_id', id)
+      if (error) return respond(500, { error: 'Akses properti gagal dimuat.' })
+      propertyIds = data.map(row => row.property_id)
+    }
+    if (!Array.isArray(propertyIds) || !propertyIds.every(value => typeof value === 'string' && value.trim())) {
+      return respond(400, { error: 'Pilihan properti tidak valid.' })
+    }
+    const { error } = await admin.rpc('update_dcip_staff_access', {
+      p_caller: authData.user.id, p_id: id, p_name: displayName, p_division: divisionId, p_properties: propertyIds,
+    })
+    if (error) return respond(error.code === '42501' ? 403 : 400, { error: 'Perubahan nama, divisi, atau akses properti gagal disimpan.' })
     return respond(200, { ok: true })
   }
 
