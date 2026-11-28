@@ -405,6 +405,33 @@ if(s.page==='home'){
 if(s.page==='success'){html+=`<div class="success"><div class="check" aria-hidden="true">✓</div>${title('Pendataan tersimpan')}<p>Divisi ${esc(getDivision()?.name||"")} · ${esc(prop().name)} · Area ${esc(s.areaPosition)} · ${esc(locationDisplayName(s.room,s.areaPosition))} &middot; ${esc(s.position||'Kode posisi belum dipilih')}</p></div><button class="full" data-act="another">Data lokasi berikutnya</button><div class="actions"><button class="secondary" data-act="history">Lihat riwayat</button></div>`;}
 if(s.page==='history'){html+=title('Riwayat Pendataan')+(s.history.length?s.history.map(h=>`<div class="review-row"><strong>${esc(locationDisplayName(h.room,h.areaPosition))}</strong><div class="muted">${h.division?`${esc(h.division)} · `:""}${esc(h.property)} &middot; ${esc(h.areaPosition||'Area belum dicatat')} &middot; ${esc(h.position||'Kode posisi belum dicatat')} &middot; ${esc(h.time)}</div><span class="good small">Tersimpan</span></div>`).join(''):'<p>Belum ada pendataan.</p>')+`<div class="actions"><button data-act="home">Pendataan lokasi</button></div>`;}
 root.innerHTML=html;}
+function openAddChecklistComponent(scope) {
+  const dialog = document.getElementById('checklist-tools');
+  dialog.innerHTML = '<form class="modal-body"><div class="modal-header"><h2 id="checklist-tools-title">Buat Komponen Baru</h2></div>' +
+    '<div class="field"><label for="component-name">Nama komponen</label><input id="component-name" name="componentName" required maxlength="120"></div>' +
+    '<p class="error" role="status"></p><div class="modal-actions"><button type="button" class="secondary" data-cancel>Batal</button><button type="submit">Simpan Komponen</button></div></form>';
+  const form = dialog.querySelector('form');
+  dialog.oncancel = event => { if (form.inert) event.preventDefault(); };
+  form.querySelector('[data-cancel]').onclick = () => { if (!form.inert) dialog.close(); };
+  form.onsubmit = async event => {
+    event.preventDefault();
+    if (form.inert) return;
+    const status = form.querySelector('[role="status"]');
+    const name = form.elements.componentName.value.trim();
+    if (!name) { status.textContent = 'Isi nama komponen.'; return; }
+    form.inert = true;
+    try {
+      const id = await rmisCall('addChecklistComponent', scope.division_id, scope.position_id, name);
+      await loadMasterData();
+      dialog.close();
+      render();
+      document.getElementById('spec-' + id)?.focus();
+    } catch (error) {
+      status.textContent = error.message;
+    } finally { form.inert = false; }
+  };
+  dialog.showModal();
+}
 function openChecklistTools(itemId) {
   const dialog = document.getElementById('checklist-tools');
   const entry = all.find(([id]) => id === itemId);
@@ -421,7 +448,7 @@ function openChecklistTools(itemId) {
         '<div class="field"><label for="remove-spec">Opsi yang akan dihapus</label><select id="remove-spec" name="remove">' +
         options(materials.map(row => [row.option_id,row.option_value]), '', 'Pilih opsi') + '</select></div>'
       : '<p class="muted">Usulkan spesifikasi baru untuk ditinjau admin.</p>';
-  const actions = !entry ? '<button type="submit">Buka komponen</button><button type="button" class="secondary" data-new-component>Buat Komponen Baru</button>' +
+  const actions = !entry ? '<button type="submit">Buka komponen</button><button type="button" class="secondary" data-new-component>' + (canManage ? 'Buat Komponen Baru' : 'Ajukan Komponen') + '</button>' +
     (canManage ? '<button type="button" class="danger-button" data-remove-component disabled>Hapus Komponen</button>' : '')
     : canManage ? '<button type="submit">Tambah</button><button type="button" class="danger-button" data-remove>Hapus opsi</button><button type="button" class="danger-button" data-remove-component>Hapus Komponen</button>'
     : '<button type="button" data-propose>Ajukan spesifikasi</button>';
@@ -477,7 +504,8 @@ function openChecklistTools(itemId) {
     if (event.target.closest('[data-close]')) dialog.close();
     if (event.target.closest('[data-new-component]')) {
       dialog.close();
-      openRequestDialog('KOMPONEN');
+      if (canManage) openAddChecklistComponent(scope);
+      else openRequestDialog('KOMPONEN');
     }
     if (event.target.closest('[data-propose]')) {
       dialog.close();
@@ -1101,7 +1129,7 @@ async function startAuthenticatedApp() {
   const authApp = document.getElementById('auth-app');
   const app = document.getElementById('app');
   const settingsButton = document.getElementById('open-settings');
-  const {createDcipApi} = await import('./dcip-api.js?v=806f540');
+  const {createDcipApi} = await import('./dcip-api.js?v=component-direct');
   dcipApi = await createDcipApi();
   async function showSession() {
     const profile = await dcipApi.currentProfile();
